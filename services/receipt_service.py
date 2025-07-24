@@ -4,13 +4,17 @@ from models.product import Product
 from app import db
 from decimal import Decimal
 
+
+
 class ReceiptService:
+    TAX_RATE = Decimal('0.10')  # Default tax rate of 15%
     @staticmethod
     def create_receipt(receipt_data, created_by_id):
         """Create a new receipt with items"""
         try:
             items_data = receipt_data['items']
-            tax_rate = receipt_data.get('tax_rate', 0)
+            # tax_rate = receipt_data.get('tax_rate', 0)
+            tax_rate = ReceiptService.TAX_RATE
             recipient_name = receipt_data['recipient_name']
             recipient_number = receipt_data['recipient_number']
             # Validate products exist and calculate amounts
@@ -44,8 +48,9 @@ class ReceiptService:
             receipt = Receipt(
                 recipient_name=recipient_name,
                 recipient_number=recipient_number,
-                total_amount=total_amount,
+                total_amount=subtotal,
                 tax_amount=tax_amount,
+                gross_amount=total_amount,
                 created_by=created_by_id
             )
             
@@ -106,3 +111,4 @@ class ReceiptService:
         except Exception as e:
             db.session.rollback()
             return False, str(e)
+    

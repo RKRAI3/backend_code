@@ -25,7 +25,7 @@ class Product(db.Model):
     def to_dict(self):
         return {
             'prod_id': self.prod_id,
-            'name': self.name,
+            'service': self.name,
             'unit_price': float(self.unit_price),
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,

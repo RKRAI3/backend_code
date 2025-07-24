@@ -12,6 +12,7 @@ class Receipt(db.Model):
     recipient_number = db.Column(db.String(20), nullable=True)
     total_amount = db.Column(db.Numeric(12, 2), nullable=False)
     tax_amount = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    gross_amount = db.Column(db.Numeric(12, 2), nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
@@ -45,6 +46,7 @@ class Receipt(db.Model):
             'recipient_number': self.recipient_number,
             'total_amount': float(self.total_amount),
             'tax_amount': float(self.tax_amount),
+            'total_amount': float(self.total_amount),
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,

@@ -80,5 +80,4 @@ class ReceiptCreateSchema(BaseModel):
         prod_ids = [item.prod_id for item in v]
         if len(prod_ids) != len(set(prod_ids)):
             raise ValueError('Duplicate products are not allowed')
-                
         return v

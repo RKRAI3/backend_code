@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.receipt_service import ReceiptService
 from validators.schemas import ReceiptCreateSchema
 from utils.decorators import validate_json
+from utils.utility import transform_receipt_data
 
 receipt_bp = Blueprint('receipts', __name__)
 
@@ -13,9 +14,7 @@ def get_receipts():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
-        
         receipts_paginated = ReceiptService.get_all_receipts(page, per_page)
-        
         return jsonify({
             'message': 'Receipts retrieved successfully',
             'data': {
@@ -64,10 +63,14 @@ def get_receipt(receipt_id):
         if not receipt:
             return jsonify({'message': 'Receipt not found'}), 404
         
-        return jsonify({
-            'message': 'Receipt retrieved successfully',
-            'data': receipt.to_dict()
-        }), 200
+        # return jsonify({
+        #     'message': 'Receipt retrieved successfully',
+        #     'data': receipt.to_dict()
+        # }), 200
+        response = transform_receipt_data(receipt.to_dict())
+        response["message"] = 'Receipts retrieved successfully'
+        response["status"] = True
+        return jsonify(response),200
         
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve receipt: {str(e)}'}), 500

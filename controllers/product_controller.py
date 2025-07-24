@@ -13,23 +13,35 @@ def get_products():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
-        
         products_paginated = ProductService.get_all_products(page, per_page)
-        
+        products = [product.to_dict() for product in products_paginated.items]
+        fields_to_remove = ["updated_at", "created_at", "created_by"]
+        # Process each item
+
+        for item in products:
+            # Remove unwanted fields
+            for field in fields_to_remove:
+                item.pop(field, None)
+            # Rename prod_id to id
+            item["id"] = item.pop("prod_id")
+            item["price"] = item.pop("unit_price")
+            
+        # return jsonify(op_lst,200)
         return jsonify({
             'message': 'Products retrieved successfully',
-            'data': {
-                'products': [product.to_dict() for product in products_paginated.items],
-                'pagination': {
-                    'page': products_paginated.page,
-                    'per_page': products_paginated.per_page,
-                    'total': products_paginated.total,
-                    'pages': products_paginated.pages,
-                    'has_next': products_paginated.has_next,
-                    'has_prev': products_paginated.has_prev
-                }
-            }
+            'data': products,
+            "status":True
         }), 200
+                # 'pagination': {
+                #     'page': products_paginated.page,
+                #     'per_page': products_paginated.per_page,
+                #     'total': products_paginated.total,
+                #     'pages': products_paginated.pages,
+                #     'has_next': products_paginated.has_next,
+                #     'has_prev': products_paginated.has_prev
+                # }
+            
+        
         
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve products: {str(e)}'}), 500

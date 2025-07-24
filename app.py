@@ -6,7 +6,7 @@ from flask_cors import CORS
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
-
+from config import Config
 load_dotenv()
 
 # Initialize extensions
@@ -41,7 +41,9 @@ def create_app():
     from controllers.user_controller import user_bp
     from controllers.product_controller import product_bp
     from controllers.receipt_controller import receipt_bp
+    from controllers.receipt_item_controller import receipt_item_bp
     
+    app.register_blueprint(receipt_item_bp, url_prefix='/api/receipt_items')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
     app.register_blueprint(product_bp, url_prefix='/api/products')
