@@ -21,10 +21,11 @@ class Receipt(db.Model):
     # Relationships
     receipt_items = db.relationship('ReceiptItem', backref='receipt', lazy=True, cascade='all, delete-orphan')
     
-    def __init__(self, total_amount, tax_amount, created_by,recipient_number,recipient_name):
+    def __init__(self, total_amount, tax_amount,gross_amount, created_by,recipient_number,recipient_name):
         self.receipt_number = self.generate_receipt_number()
         self.total_amount = total_amount
         self.tax_amount = tax_amount
+        self.gross_amount = gross_amount
         self.created_by = created_by
         self.recipient_number = recipient_number
         self.recipient_name = recipient_name
@@ -46,7 +47,7 @@ class Receipt(db.Model):
             'recipient_number': self.recipient_number,
             'total_amount': float(self.total_amount),
             'tax_amount': float(self.tax_amount),
-            'total_amount': float(self.total_amount),
+            'gross_amount': float(self.gross_amount),
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
