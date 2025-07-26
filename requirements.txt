@@ -1,8 +1,8 @@
-Flask==2.3.3
-Flask_Bcrypt==1.0.1
-Flask_Cors==4.0.0
-Flask_JWT_Extended==4.5.2
-flask_sqlalchemy==3.1.1
-pydantic==2.11.7
-python-dotenv==1.1.1
-SQLAlchemy==1.4.54
+Flask
+Flask_Bcrypt
+Flask_Cors
+Flask_JWT_Extended
+flask_sqlalchemy
+pydantic
+python-dotenv
+SQLAlchemy
