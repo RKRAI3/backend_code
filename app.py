@@ -15,6 +15,7 @@ jwt = JWTManager()
 bcrypt = Bcrypt()
 
 def create_app():
+    print("Someone accessed the home page!")
     app = Flask(__name__)
     
     # Configuration
@@ -42,7 +43,9 @@ def create_app():
     from controllers.product_controller import product_bp
     from controllers.receipt_controller import receipt_bp
     from controllers.receipt_item_controller import receipt_item_bp
-    
+    @app.route("/")
+    def home():
+        return "Welcome!"
     app.register_blueprint(receipt_item_bp, url_prefix='/api/receipt_items')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
