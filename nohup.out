@@ -1,0 +1,171 @@
+Someone accessed the home page!
+Starting the application...
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.3.57:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 122-738-984
+223.181.33.45 - - [26/Jul/2025 18:40:01] "GET / HTTP/1.1" 200 -
+223.181.33.45 - - [26/Jul/2025 18:40:01] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+Someone accessed the home page!
+Starting the application...
+Someone accessed the home page!
+Starting the application...
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.3.57:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 122-738-984
+223.181.33.45 - - [26/Jul/2025 18:41:20] "POST /api/auth/login HTTP/1.1" 200 -
+223.181.33.45 - - [26/Jul/2025 18:41:22] "GET / HTTP/1.1" 200 -
+Someone accessed the home page!
+Starting the application...
+EMAIL is admin@example.com-admin123
+exsisting user is $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O
+Verifying password for user $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O-admin123
+Someone accessed the home page!
+Starting the application...
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.3.57:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 136-088-546
+106.219.152.138 - - [27/Jul/2025 14:30:52] code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03')
+106.219.152.138 - - [27/Jul/2025 14:30:52] "[31m[1m\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03[0m" 400 -
+106.219.152.138 - - [27/Jul/2025 14:30:52] code 400, message Bad request version ('41P')
+106.219.152.138 - - [27/Jul/2025 14:30:52] "[31m[1m\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03\x00LuÂZ\x9e\x0b\x0eº<s\x17±`È\x88/§\x8cRÛ?}µM\x82B~Ô÷7\x98 Ñn¾=}\x1f­>õ\x17\x13g\x07\x92½³âÚT~(0ê\x1b\x0b¢Ã\x84(þ/V\x00 **\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93zz\x00\x00\x00\x0b\x00\x02\x01\x00\x003\x04ï\x04í\x1a\x1a\x00\x01\x00\x11ì\x04À\x90à\x0e\x96\x0c\x10\x9dT\x0e\x12\x88K_x\x83\x86\x83`\x8d<\x0ejcÏ1@ËA¸\x9fæ«µ¹\x8cGáÒ&ÃT wWR9(S1â\x8541P[0m" 400 -
+106.219.152.138 - - [27/Jul/2025 14:30:55] "[33mGET /home HTTP/1.1[0m" 404 -
+106.219.152.138 - - [27/Jul/2025 14:30:56] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+Someone accessed the home page!
+Starting the application...
+Someone accessed the home page!
+Starting the application...
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.3.57:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 540-064-090
+106.219.152.138 - - [27/Jul/2025 17:49:46] "POST /api/auth/login HTTP/1.1" 200 -
+106.219.152.138 - - [27/Jul/2025 17:50:00] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+106.219.152.138 - - [27/Jul/2025 17:50:24] "POST /api/auth/login HTTP/1.1" 200 -
+106.219.152.138 - - [27/Jul/2025 17:53:43] code 400, message Bad request version ('\x00\x02\x01\x00\x00\x17\x00\x00\x00')
+106.219.152.138 - - [27/Jul/2025 17:53:43] "[31m[1m\x16\x03\x01\x06 \x01\x00\x06\x9c\x03\x03\x90\x8c\x0f\x94Ï\x1f[`ec\x19×\x9d1þ\x9d\x89\x1bÓÛe¿Ñ\x0bóµ :Gë\x8c· Í\x8awP|i%\x97<\x14¯5½\x91\\õ¢c\x06Næ¾d­ú­°\x90\x11i½\x1d\x00 jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063zz\x00\x00DÍ\x00\x05\x00\x03\x02h2\x00#\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x0b\x00\x02\x01\x00\x00\x17\x00\x00\x00[0m" 400 -
+106.219.152.138 - - [27/Jul/2025 17:53:43] code 400, message Bad request version ('\x00\x02\x01\x00\x00')
+106.219.152.138 - - [27/Jul/2025 17:53:43] "[31m[1m\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03\x9dµÓK£5Îõ\x9boaäÙOÍ\x04Ô\x02§p\x18HK\x01\x85§\x90þ\x84ÁÂ[ m<Ý\x9a\x16³½æ;\x8e\x0e)\x99Cíªc\x95\x17W\x1eÏ\x9e\x14²4sÁ\x86\x85\x1eÉ\x00 \x9a\x9a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93\x9a\x9a\x00\x00\x00\x12\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1þ\x0d\x01\x1a\x00\x00\x01\x00\x01Ã\x00 \x1c¹\x8aÎ&¬\x80}®À÷½ #Êþ0ÚWÛ\x1bz\x8f +à\x9d5ànåx\x00ðí\x9fÿâÙño\x0er¡Á\x9e[\x00Lñ#»\x02Vì9gh!ykhaN8\x0fÂhÅnh\x8c\x1f©H·dê\x83c¥\x06«&\x1dÕvM\x10»)0\x86ºaÑÖ\x1b¢G"u\x98®B|ý\x14\x9d;¸ïb\x8f\x89\x8c×ñ.\x01x\x09cåè=±q\x00yF\x94*\x94\x14ßF\x03]B\x11]\x9e\x99}\x17\x02¹Ûç\x16è^Û\x0f3\x99ÇRãýd&\x90w²ª`²\x92\x14>6_q 5\x1d<\x1f5r\x98È\x06âDçû`>\x10¼\x1bçy\x8e¹Y25ä\x8b\x05Kw\x9b)^ú\x8dÄI\x7f\x0d\x9f\x0e½\x0eÝ£Ãc2A\x812©4H\x9d\x02§îé*\x97\x1fn~z×\x1f\x84½>o\x9bYì»õ®e7\x03\x87E;\x88ÇÞäMk_[\x0cë\x9dð\x12¶ã\x00#\x00\x00\x00-\x00\x02\x01\x01\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x0b\x00\x02\x01\x00\x00[0m" 400 -
+106.219.152.138 - - [27/Jul/2025 17:53:50] code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x17\x00\x00ÿ\x01\x00\x01\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
+106.219.152.138 - - [27/Jul/2025 17:53:50] "[31m[1m\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03GFÞ©ÂðE÷ÖpûiP­õ9w|4\x19Ðm²«È\x86\x02\x9aº³\x13Ï Áçs|)i\x1do\x82©\x16\x89uØëW~\x0cë­\x14\x09\x06¹,Ñv\x7f=¹A>\x00 zz\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93úú\x00\x00\x00\x0d\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00#\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1\x00\x17\x00\x00ÿ\x01\x00\x01\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00[0m" 400 -
+106.219.152.138 - - [27/Jul/2025 17:53:51] code 400, message Bad request version ('\x9a\x9a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sÚÚ\x00\x00\x00\x17\x00\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00ÿ\x01\x00\x01\x00\x003\x04ï\x04íZZ\x00\x01\x00\x11ì\x04Àfµ¦Ò¸Ä\x92\x87QÞ7²[\x13')
+106.219.152.138 - - [27/Jul/2025 17:53:51] "[31m[1m\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03\x94Cô\x9aé\x99ÎÀ~\x96fý\x1cZ1´\x98@DÍåf\x90Aeb¡¹«\x09\x0c\x1f Oa\x8eÀÉCË)ÁTÊv ñ$G\x94\x0dE¡\x18²\x00\x1f\x11=VZÉÂS=\x00 \x9a\x9a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sÚÚ\x00\x00\x00\x17\x00\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00ÿ\x01\x00\x01\x00\x003\x04ï\x04íZZ\x00\x01\x00\x11ì\x04Àfµ¦Ò¸Ä\x92\x87QÞ7²[\x13[0m" 400 -
+207.154.224.101 - - [27/Jul/2025 21:29:39] "GET / HTTP/1.1" 200 -
+207.154.224.101 - - [27/Jul/2025 21:29:39] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+3.137.73.221 - - [27/Jul/2025 21:42:02] "GET / HTTP/1.1" 200 -
+3.137.73.221 - - [27/Jul/2025 21:43:54] "GET / HTTP/1.1" 200 -
+3.137.73.221 - - [27/Jul/2025 21:44:41] code 400, message Bad request version ('À\x14À')
+3.137.73.221 - - [27/Jul/2025 21:44:41] "[31m[1m\x16\x03\x01\x00{\x01\x00\x00w\x03\x035M\x186\x89.4íf¤\x80ø\x9d\x16jªéVs\x83"A$âù">\x1dqkð¨\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À[0m" 400 -
+3.137.73.221 - - [27/Jul/2025 21:45:51] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.137.73.221 - - [27/Jul/2025 21:45:51] "[31m[1mSSH-2.0-Go[0m" 400 -
+3.137.73.221 - - [27/Jul/2025 21:46:46] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x031)Ù\x81ØÇ\x9f:\x08èÊ,~(ÈèÞ\x80áh\x99õµµÊL¼Äb£)-\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+3.137.73.221 - - [27/Jul/2025 21:46:46] "[31m[1m\x16\x03\x01\x00{\x01\x00\x00w\x03\x031)Ù\x81ØÇ\x9f:\x08èÊ,~(ÈèÞ\x80áh\x99õµµÊL¼Äb£)-\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À[0m" 400 -
+123.176.143.216 - - [27/Jul/2025 22:55:31] "GET / HTTP/1.0" 200 -
+122.176.153.214 - - [28/Jul/2025 12:24:48] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 400 -
+65.49.1.52 - - [28/Jul/2025 14:11:54] "GET / HTTP/1.1" 200 -
+65.49.1.53 - - [28/Jul/2025 14:12:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+205.210.31.59 - - [28/Jul/2025 19:14:19] "GET / HTTP/1.0" 200 -
+205.210.31.78 - - [28/Jul/2025 19:21:21] "GET / HTTP/1.1" 200 -
+205.210.31.142 - - [28/Jul/2025 20:36:52] "GET / HTTP/1.1" 200 -
+3.134.148.59 - - [28/Jul/2025 23:20:54] "GET / HTTP/1.1" 200 -
+3.134.148.59 - - [28/Jul/2025 23:21:34] code 400, message Bad request version ('À\x14À')
+3.134.148.59 - - [28/Jul/2025 23:21:34] "[31m[1m\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x99ÈîÚðôÔ°NM\x03> 3Ü,ÛÀ2@\x1d¢\x17®5\x84a­\\$\x19×\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À[0m" 400 -
+3.134.148.59 - - [28/Jul/2025 23:23:12] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.134.148.59 - - [28/Jul/2025 23:23:12] "[31m[1mSSH-2.0-Go[0m" 400 -
+3.134.148.59 - - [28/Jul/2025 23:23:53] code 400, message Bad request version ('À\x14À')
+3.134.148.59 - - [28/Jul/2025 23:23:53] "[31m[1m\x16\x03\x01\x00{\x01\x00\x00w\x03\x03q­(\x97O¨2\x9b\x97\x9c»ÒU.i\x887\x9bÆ\x8b\\×)4\x0cmù/5\x09<¹\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À[0m" 400 -
+34.93.210.140 - - [29/Jul/2025 04:54:08] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00þ\x01\x00\x00ú\x03\x03êC')
+34.93.210.140 - - [29/Jul/2025 04:54:08] "[31m[1m\x16\x03\x01\x00þ\x01\x00\x00ú\x03\x03êC\x0br\x19[0m" 400 -
+34.93.210.140 - - [29/Jul/2025 04:54:11] "GET / HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 06:47:31] "GET / HTTP/1.1" 200 -
+49.36.178.179 - - [29/Jul/2025 06:47:31] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+ * Detected change in '/home/ubuntu/backend/backend_code/run.py', reloading
+Someone accessed the home page!
+Starting the application...
+EMAIL is admin@example.com-admin123
+exsisting user is $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O
+Verifying password for user $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O-admin123
+EMAIL is admin@example.com-admin1234
+exsisting user is $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O
+Verifying password for user $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O-admin1234
+EMAIL is admin@example.com-admin123
+exsisting user is $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O
+Verifying password for user $2b$12$eWWrqHptgIB3n7Rf0Q2oOuXcG1VpUvXHz6IQNNAY3WxSkWY3Sk0.O-admin123
+ * Restarting with stat
+Someone accessed the home page!
+Starting the application...
+Traceback (most recent call last):
+  File "/home/ubuntu/backend/backend_code/run.py", line 7, in <module>
+    app.run(ssl_context=('cert.pem','key.pem'),host='0.0.0.0',port=5000)
+  File "/home/ubuntu/backend/backend_code/venv/lib/python3.12/site-packages/flask/app.py", line 662, in run
+    run_simple(t.cast(str, host), port, self, **options)
+  File "/home/ubuntu/backend/backend_code/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 1093, in run_simple
+    srv = make_server(
+          ^^^^^^^^^^^^
+  File "/home/ubuntu/backend/backend_code/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 930, in make_server
+    return ThreadedWSGIServer(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/backend/backend_code/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 801, in __init__
+    ssl_context = load_ssl_context(*ssl_context)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/backend/backend_code/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 644, in load_ssl_context
+    ctx.load_cert_chain(cert_file, pkey_file)
+FileNotFoundError: [Errno 2] No such file or directory
+Someone accessed the home page!
+Starting the application...
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on https://127.0.0.1:5000
+ * Running on https://172.31.3.57:5000
+[33mPress CTRL+C to quit[0m
+49.36.178.179 - - [29/Jul/2025 10:38:10] "OPTIONS /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:38:11] "GET /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:38:29] "OPTIONS /api/receipts/ HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:38:29] "[35m[1mPOST /api/receipts/ HTTP/1.1[0m" 201 -
+49.36.178.179 - - [29/Jul/2025 10:38:30] "OPTIONS /api/receipts/6 HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:38:30] "GET /api/receipts/6 HTTP/1.1" 200 -
+127.0.0.1 - - [29/Jul/2025 10:44:06] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [29/Jul/2025 10:44:06] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [29/Jul/2025 10:44:12] "GET / HTTP/1.0" 200 -
+122.180.30.251 - - [29/Jul/2025 10:47:10] "OPTIONS /api/products/all_product HTTP/1.1" 200 -
+49.36.178.179 - - [29/Jul/2025 10:47:11] "GET /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:47:11] "OPTIONS /api/receipts/6 HTTP/1.1" 200 -
+49.36.178.179 - - [29/Jul/2025 10:47:12] "GET /api/receipts/6 HTTP/1.1" 200 -
+49.36.178.179 - - [29/Jul/2025 10:47:39] "OPTIONS /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:47:40] "GET /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:48:00] "OPTIONS /api/receipts/ HTTP/1.1" 200 -
+49.36.178.179 - - [29/Jul/2025 10:48:00] "[35m[1mPOST /api/receipts/ HTTP/1.1[0m" 201 -
+122.180.30.251 - - [29/Jul/2025 10:48:00] "OPTIONS /api/receipts/7 HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:48:01] "GET /api/receipts/7 HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:51:48] "OPTIONS /api/products/all_product HTTP/1.1" 200 -
+122.180.30.251 - - [29/Jul/2025 10:51:49] "GET /api/products/all_product HTTP/1.1" 200 -
+127.0.0.1 - - [29/Jul/2025 10:59:42] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [29/Jul/2025 10:59:42] "GET / HTTP/1.0" 200 -
