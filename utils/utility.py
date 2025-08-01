@@ -4,6 +4,8 @@ Created on Thu Jul 24 16:26:40 2025
 
 @author: RAVI KANT
 """
+from datetime import datetime, timedelta
+
 
 def transform_receipt_data(original_data):
     # Extract and transform the data
@@ -29,4 +31,57 @@ def transform_receipt_data(original_data):
         new_data['items'].append(transformed_item)
 
     return new_data
+
+def transform_pre_generated_receipts_list(receipts):
+    # Extract and transform the data
+    new_data = [{
+        'recpt_id': rcpt.to_dict().get('receipt_id'),
+        'recpt_nmbr': rcpt.to_dict().get('receipt_number'),
+        'rcpnt_nm': rcpt.to_dict().get('recipient_name'),
+        'rcpnt_mob': rcpt.to_dict().get('recipient_number'),
+        'tot_incl_tax': rcpt.to_dict().get('gross_amount'),
+        'recpt_dt': rcpt.to_dict().get('created_at', '').split('T')[0],  # Remove time portion
+    } for rcpt in receipts.items]
+    return new_data
+
+def transform_dashboard_data(receipts_data):
+    # Extract and transform the data
+    yesterday = datetime.now() - timedelta(days=1)
+    # Format as 'YYYY-MM-DD'
+    yesterday = yesterday.strftime('%Y-%m-%d')
+    keys_to_remove = ["created_at", "id", "prod_id", "receipt_id"]
+    rename_map = {"receipt_id":"recpt_id",
+                  "receipt_number":"recpt_nmbr",
+                  "recipient_name":"rcpnt_nm",
+                  "recipient_number":"rcpnt_mob",
+                  "receipt_dt":"recpt_dt",
+                  "total_amount": "tot_amt",
+                  "tax_amount": "tax_amt"}
+    itms_rename = {"product_name":"service",
+                   "unit_price": "per_unt",
+                   "quantity": "nos_unt",
+                   "total_amount": "tot_amt"
+                   }
+    # receipts_lst=[]
+    # receipts={"receipts":[]}
+    
+    for receipts in receipts_data:
+        for rcpt in receipts['receipts']:
+            for item in rcpt["items"]:
+                for key in keys_to_remove:
+                    item.pop(key, None)
+                for old_key, new_key in itms_rename.items():
+                        if old_key in item:
+                            item[new_key] = item.pop(old_key) 
+            if "created_at" in rcpt:
+                rcpt["created_at"] = rcpt.get('created_at', '').split('T')[0]
+                rcpt["recpt_dt"] = rcpt.pop("created_at") 
+            if "updated_at" in rcpt:
+                rcpt.pop("updated_at", None)
+            for old_key, new_key in rename_map.items():
+                if old_key in rcpt:
+                    rcpt[new_key] = rcpt.pop(old_key) 
+            # receipts["receipts"].append(rcpt)
+        # receipts_lst.append(receipts)
+    return receipts_data
     
