@@ -4,10 +4,8 @@ from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from datetime import timedelta
-import os
-from dotenv import load_dotenv
-from config import Config
-load_dotenv()
+from environment import SECRET_KEY, DATABASE_URL, JWT_SECRET_KEY, ADMIN_NAME, ADMIN_ID, PASSWORD, SQLALCHEMY_TRACK_MODIFICATIONS
+
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -15,11 +13,10 @@ jwt = JWTManager()
 bcrypt = Bcrypt()
 
 def create_app():
-    print("Someone accessed the home page!")
     app = Flask(__name__)
     
     # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'mysql+pymysql://username:password@localhost:3306/receipt_generator')
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 300,
@@ -27,7 +24,7 @@ def create_app():
         'pool_size': 10,
         'max_overflow': 20
     }
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+    app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
     app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
     
@@ -43,6 +40,7 @@ def create_app():
     from controllers.product_controller import product_bp
     from controllers.receipt_controller import receipt_bp
     from controllers.receipt_item_controller import receipt_item_bp
+    from controllers.dashboard_controller import dashboard_bp
     @app.route("/")
     def home():
         return "Welcome!"
@@ -51,6 +49,8 @@ def create_app():
     app.register_blueprint(user_bp, url_prefix='/api/users')
     app.register_blueprint(product_bp, url_prefix='/api/products')
     app.register_blueprint(receipt_bp, url_prefix='/api/receipts')
+    app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
+    
     
     # Create tables
     with app.app_context():
@@ -58,12 +58,12 @@ def create_app():
         
         # Create default admin user if not exists
         from models.user import User
-        admin = User.query.filter_by(email='admin@example.com').first()
+        admin = User.query.filter_by(email=ADMIN_ID).first()
         if not admin:
             admin_user = User(
-                user_name='admin',
-                email='admin@example.com',
-                password='admin123',
+                user_name=ADMIN_NAME,
+                email=ADMIN_ID,
+                password=PASSWORD,
                 is_admin=True
             )
             db.session.add(admin_user)

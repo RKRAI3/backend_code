@@ -3,13 +3,14 @@ from models.receipt_item import ReceiptItem
 from models.product import Product
 from app import db
 from decimal import Decimal
+from environment import TAX_RATE
 
 
 
 class ReceiptService:
-    TAX_RATE = Decimal('0.10')  # Default tax rate of 15%
+    TAX_RATE = Decimal(TAX_RATE)
     @staticmethod
-    def create_receipt(receipt_data, created_by_id):
+    def create_receipt(receipt_data, created_by_id,):
         """Create a new receipt with items"""
         try:
             items_data = receipt_data['items']
@@ -75,11 +76,10 @@ class ReceiptService:
             return None, str(e)
     
     @staticmethod
-    def get_all_receipts(page=1, per_page=10):
+    def get_all_receipts(current_user_id, page=1, per_page=10):
         """Get all active receipts with pagination"""
-        receipts = Receipt.query.filter_by(deleted_at=None).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        qry = Receipt.query.filter_by(deleted_at=None, created_by=current_user_id)
+        receipts = qry.order_by(Receipt.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         return receipts
     
     @staticmethod
@@ -91,7 +91,77 @@ class ReceiptService:
     def get_receipt_by_number(receipt_number):
         """Get receipt by receipt number"""
         return Receipt.query.filter_by(receipt_number=receipt_number, deleted_at=None).first()
+
+
+    @staticmethod
+    def get_receipt_items_by_receipt_id(receipt_id):
+        """Get all items for a specific receipt"""
+        try:
+            # First check if receipt exists
+            receipt = Receipt.query.filter_by(receipt_id=receipt_id, deleted_at=None).first()
+            if not receipt:
+                return None, "Receipt not found"
+            
+            # Get all active receipt items for this receipt
+            receipt_items = ReceiptItem.query.filter_by(
+                receipt_id=receipt_id, 
+                deleted_at=None
+            ).join(Product).filter(Product.deleted_at == None).all()
+            
+            return receipt_items, None
+            
+        except Exception as e:
+            return None, str(e)
     
+    @staticmethod
+    def get_receipt_items_with_details(receipt_id):
+        """Get receipt items with detailed product information"""
+        try:
+            # Check if receipt exists
+            receipt = Receipt.query.filter_by(receipt_id=receipt_id, deleted_at=None).first()
+            if not receipt:
+                return None, "Receipt not found"
+            
+            # Query receipt items with product details
+            items_query = db.session.query(
+                ReceiptItem.id,
+                ReceiptItem.receipt_id,
+                ReceiptItem.prod_id,
+                ReceiptItem.unit_price,
+                ReceiptItem.quantity,
+                ReceiptItem.total_amount,
+                ReceiptItem.created_at,
+                Product.name.label('product_name'),
+                Product.unit_price.label('current_product_price')
+            ).join(
+                Product, ReceiptItem.prod_id == Product.prod_id
+            ).filter(
+                ReceiptItem.receipt_id == receipt_id,
+                ReceiptItem.deleted_at == None,
+                Product.deleted_at == None
+            ).all()
+            
+            # Convert to dictionary format
+            items_list = []
+            for item in items_query:
+                items_list.append({
+                    'id': item.id,
+                    'receipt_id': item.receipt_id,
+                    'prod_id': item.prod_id,
+                    'product_name': item.product_name,
+                    'unit_price': float(item.unit_price),
+                    'current_product_price': float(item.current_product_price),
+                    'quantity': item.quantity,
+                    'total_amount': float(item.total_amount),
+                    'created_at': item.created_at.isoformat() if item.created_at else None
+                })
+            
+            return items_list, None
+            
+        except Exception as e:
+            return None, str(e)
+    
+   
     @staticmethod
     def delete_receipt(receipt_id):
         """Soft delete receipt"""

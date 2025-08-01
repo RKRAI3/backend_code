@@ -6,7 +6,7 @@ from utils.decorators import admin_required, validate_json
 
 user_bp = Blueprint('users', __name__)
 
-@user_bp.route('/', methods=['GET'])
+@user_bp.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
     """Get all users with pagination"""
@@ -34,7 +34,7 @@ def get_users():
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve users: {str(e)}'}), 500
 
-@user_bp.route('/', methods=['POST'])
+@user_bp.route('/createuser', methods=['POST'])
 @admin_required
 @validate_json(UserCreateSchema)
 def create_user(validated_data):
@@ -42,15 +42,12 @@ def create_user(validated_data):
     try:
         current_user_id = get_jwt_identity()
         user, error = UserService.create_user(validated_data, current_user_id)
-        
         if error:
             return jsonify({'message': error}), 400
-        
         return jsonify({
             'message': 'User created successfully',
             'data': user.to_dict()
         }), 201
-        
     except Exception as e:
         return jsonify({'message': f'Failed to create user: {str(e)}'}), 500
 
