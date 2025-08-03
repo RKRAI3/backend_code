@@ -17,11 +17,12 @@ class ReceiptService:
             # tax_rate = receipt_data.get('tax_rate', 0)
             tax_rate = ReceiptService.TAX_RATE
             recipient_name = receipt_data['recipient_name']
-            recipient_number = receipt_data['recipient_number']
+            recipient_number = receipt_data.get('recipient_number', None)
+            payment_mode = receipt_data.get('payment_mode', 'CASH')
+            transaction_number = receipt_data.get('transaction_number', None)
             # Validate products exist and calculate amounts
             subtotal = Decimal('0.00')
             receipt_items = []
-            
             for item_data in items_data:
                 product = Product.query.filter_by(
                     prod_id=item_data['prod_id'], 
@@ -42,9 +43,11 @@ class ReceiptService:
                 })
             
             # Calculate tax and total
+            print("Tax Rate:", tax_rate)
             tax_amount = subtotal * Decimal(str(tax_rate))
+            print("Tax Amount:", tax_amount)
             total_amount = subtotal + tax_amount
-            
+            print("RABI2")
             # Create receipt
             receipt = Receipt(
                 recipient_name=recipient_name,
@@ -52,9 +55,11 @@ class ReceiptService:
                 total_amount=subtotal,
                 tax_amount=tax_amount,
                 gross_amount=total_amount,
+                payment_mode=payment_mode,
+                transaction_number=transaction_number,
                 created_by=created_by_id
             )
-            
+            print("RABI3", receipt)
             db.session.add(receipt)
             db.session.flush()  # Get receipt ID
             
@@ -67,10 +72,8 @@ class ReceiptService:
                     quantity=item_data['quantity']
                 )
                 db.session.add(receipt_item)
-            
             db.session.commit()
             return receipt, None
-            
         except Exception as e:
             db.session.rollback()
             return None, str(e)

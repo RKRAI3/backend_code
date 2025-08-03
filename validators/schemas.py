@@ -62,7 +62,8 @@ class ReceiptCreateSchema(BaseModel):
     tax_rate: Optional[Decimal] = Field(default=Decimal('0'), ge=0, le=1)
     recipient_name: Optional[str] = Field(default=None, max_length=50)
     recipient_number: Optional[str] = Field(default=None, max_length=20)
-
+    payment_mode: str = Field(default='CASH', max_length=20)
+    transaction_number: Optional[str] = Field(default=None, max_length=50)
     @field_validator('tax_rate')
     @classmethod
     def validate_tax_rate(cls, v):
