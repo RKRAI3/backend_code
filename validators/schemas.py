@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import Optional, List
 from decimal import Decimal
+from uuid import UUID
 
 class UserCreateSchema(BaseModel):
     user_name: str = Field(..., min_length=2, max_length=100)
@@ -54,7 +55,7 @@ class ProductUpdateSchema(BaseModel):
         return v
 
 class ReceiptItemSchema(BaseModel):
-    prod_id: int = Field(..., gt=0)
+    prod_id: UUID = Field(..., description="Product UUID")
     quantity: int = Field(..., gt=0)
 
 class ReceiptCreateSchema(BaseModel):

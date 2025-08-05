@@ -25,7 +25,7 @@ class ReceiptService:
             receipt_items = []
             for item_data in items_data:
                 product = Product.query.filter_by(
-                    prod_id=item_data['prod_id'], 
+                    prod_id=str(item_data['prod_id']), 
                     deleted_at=None
                 ).first()
                 
@@ -43,11 +43,8 @@ class ReceiptService:
                 })
             
             # Calculate tax and total
-            print("Tax Rate:", tax_rate)
             tax_amount = subtotal * Decimal(str(tax_rate))
-            print("Tax Amount:", tax_amount)
             total_amount = subtotal + tax_amount
-            print("RABI2")
             # Create receipt
             receipt = Receipt(
                 recipient_name=recipient_name,
@@ -59,7 +56,6 @@ class ReceiptService:
                 transaction_number=transaction_number,
                 created_by=created_by_id
             )
-            print("RABI3", receipt)
             db.session.add(receipt)
             db.session.flush()  # Get receipt ID
             

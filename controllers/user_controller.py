@@ -51,7 +51,7 @@ def create_user(validated_data):
     except Exception as e:
         return jsonify({'message': f'Failed to create user: {str(e)}'}), 500
 
-@user_bp.route('/<int:user_id>', methods=['GET'])
+@user_bp.route('/<string:user_id>', methods=['GET'])
 @jwt_required()
 def get_user(user_id):
     """Get user by ID"""
@@ -68,7 +68,7 @@ def get_user(user_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve user: {str(e)}'}), 500
 
-@user_bp.route('/<int:user_id>', methods=['PUT'])
+@user_bp.route('/<string:user_id>', methods=['PUT'])
 @admin_required
 @validate_json(UserUpdateSchema)
 def update_user(validated_data, user_id):
@@ -87,7 +87,7 @@ def update_user(validated_data, user_id):
     except Exception as e:
         return jsonify({'message': f'Failed to update user: {str(e)}'}), 500
 
-@user_bp.route('/<int:user_id>', methods=['DELETE'])
+@user_bp.route('/<string:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):
     """Delete user (Admin only)"""

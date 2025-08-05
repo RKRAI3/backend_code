@@ -1,14 +1,16 @@
 from app import db
 from datetime import datetime
 from sqlalchemy import func
+import uuid
 
 class Product(db.Model):
     __tablename__ = 'products'
     
-    prod_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # prod_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    prod_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     name = db.Column(db.String(200), nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    created_by = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)

@@ -4,7 +4,7 @@ from services.receipt_item_service import ReceiptItemService
 
 receipt_item_bp = Blueprint('receipt_items', __name__)
 
-@receipt_item_bp.route('/receipt/<int:receipt_id>/items', methods=['GET'])
+@receipt_item_bp.route('/receipt/<string:receipt_id>/items', methods=['GET'])
 @jwt_required()
 def get_receipt_items_simple(receipt_id):
     """Get simple list of receipt items"""
@@ -28,7 +28,7 @@ def get_receipt_items_simple(receipt_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve receipt items: {str(e)}'}), 500
 
-@receipt_item_bp.route('/receipt/<int:receipt_id>/items/detailed', methods=['GET'])
+@receipt_item_bp.route('/receipt/<string:receipt_id>/items/detailed', methods=['GET'])
 @jwt_required()
 def get_receipt_items_detailed(receipt_id):
     """Get receipt items with complete product information"""
@@ -67,7 +67,7 @@ def get_receipt_items_detailed(receipt_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve detailed receipt items: {str(e)}'}), 500
 
-@receipt_item_bp.route('/receipt/<int:receipt_id>/items/statistics', methods=['GET'])
+@receipt_item_bp.route('/receipt/<string:receipt_id>/items/statistics', methods=['GET'])
 @jwt_required()
 def get_receipt_items_statistics(receipt_id):
     """Get statistical information about receipt items"""
@@ -88,7 +88,7 @@ def get_receipt_items_statistics(receipt_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve receipt statistics: {str(e)}'}), 500
 
-@receipt_item_bp.route('/receipt/<int:receipt_id>/items/breakdown', methods=['GET'])
+@receipt_item_bp.route('/receipt/<string:receipt_id>/items/breakdown', methods=['GET'])
 @jwt_required()
 def get_receipt_items_breakdown(receipt_id):
     """Get detailed product breakdown for receipt items"""
