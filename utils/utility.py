@@ -17,6 +17,8 @@ def transform_receipt_data(original_data):
         'tax_amt': original_data.get('tax_amount'),
         'tot_incl_tax': original_data.get('gross_amount'),
         'recpt_dt': original_data.get('created_at', '').split('T')[0],  # Remove time portion
+        'pmnt_mode': original_data.get('payment_mode', 'CASH'),
+        'trnsaction_nmbr': original_data.get('transaction_number'),
         'items': []
     }
 
@@ -40,8 +42,10 @@ def transform_pre_generated_receipts_list(receipts):
         'rcpnt_nm': rcpt.to_dict().get('recipient_name'),
         'rcpnt_mob': rcpt.to_dict().get('recipient_number'),
         'tot_incl_tax': rcpt.to_dict().get('gross_amount'),
-        'recpt_dt': rcpt.to_dict().get('created_at', '').split('T')[0],  # Remove time portion
-    } for rcpt in receipts.items]
+        'recpt_dt': rcpt.to_dict().get('created_at', '').split('T')[0],
+        'pmnt_mode': rcpt.to_dict().get('payment_mode', 'CASH'),
+        'trnsaction_nmbr': rcpt.to_dict().get('transaction_number'),
+        } for rcpt in receipts.items]
     return new_data
 
 def transform_dashboard_data(receipts_data):
@@ -56,7 +60,10 @@ def transform_dashboard_data(receipts_data):
                   "recipient_number":"rcpnt_mob",
                   "receipt_dt":"recpt_dt",
                   "total_amount": "tot_amt",
-                  "tax_amount": "tax_amt"}
+                  "tax_amount": "tax_amt",
+                  "payment_mode": "pmnt_mode",
+                  "transaction_number": "transaction_nmbr",
+                  }
     itms_rename = {"product_name":"service",
                    "unit_price": "per_unt",
                    "quantity": "nos_unt",

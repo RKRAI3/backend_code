@@ -144,7 +144,7 @@ env.bak/
 venv.bak/
 .env/
 .nohup.out/
-
+.env
 # Spyder project settings
 .spyderproject
 .spyproject
