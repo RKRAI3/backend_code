@@ -7,7 +7,6 @@ class AuthService:
     def authenticate_user(email, password):
         """Authenticate user with email and password"""
         user = User.query.filter_by(email=email, deleted_at=None).first()
-        print(f"exsisting user is {user.password_hash}")
         if user and user.verify_password(password):
             return user
         return None

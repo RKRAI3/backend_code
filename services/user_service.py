@@ -19,9 +19,9 @@ class UserService:
             db.session.commit()
             return user, None
             
-        except IntegrityError:
+        except IntegrityError as e:
             db.session.rollback()
-            return None, "Email already exists"
+            return None, f"Email already exists -{str(e)}"
         except Exception as e:
             db.session.rollback()
             return None, str(e)

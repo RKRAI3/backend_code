@@ -1,16 +1,19 @@
 from app import db, bcrypt
 from datetime import datetime
 from sqlalchemy import func
+import uuid
+
 
 class User(db.Model):
     __tablename__ = 'users'
     
-    user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     user_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)  # Increased length for MySQL
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    created_by = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=True)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -36,7 +39,6 @@ class User(db.Model):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     
     def verify_password(self, password):
-        print(f"Verifying password for user {self.password_hash}-{password}")
         return bcrypt.check_password_hash(self.password_hash, password)
     
     def soft_delete(self):

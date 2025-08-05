@@ -27,16 +27,14 @@ def get_receipts():
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve receipts: {str(e)}'}), 500
 
-@receipt_bp.route('/', methods=['POST'])
+@receipt_bp.route('/create-receipt', methods=['POST'])
 @jwt_required()
 @validate_json(ReceiptCreateSchema)
 def create_receipt(validated_data):
     """Create a new receipt"""
     try:
         current_user_id = get_jwt_identity()
-        print(f"Validated Data is: {validated_data}")
         receipt, error = ReceiptService.create_receipt(validated_data, current_user_id)
-        
         if error:
             return jsonify({'message': error}), 400
         
@@ -48,7 +46,7 @@ def create_receipt(validated_data):
     except Exception as e:
         return jsonify({'message': f'Failed to create receipt: {str(e)}'}), 500
 
-@receipt_bp.route('/<int:receipt_id>', methods=['GET'])
+@receipt_bp.route('get-receipt/<string:receipt_id>', methods=['GET'])
 @jwt_required()
 def get_receipt(receipt_id):
     """Get receipt by ID"""
@@ -87,7 +85,7 @@ def get_receipt_by_number(receipt_number):
         return jsonify({'message': f'Failed to retrieve receipt: {str(e)}'}), 500
 
 
-@receipt_bp.route('/<int:receipt_id>/items', methods=['GET'])
+@receipt_bp.route('/<string:receipt_id>/items', methods=['GET'])
 @jwt_required()
 def get_receipt_items(receipt_id):
     """Get all items for a specific receipt"""
@@ -111,7 +109,7 @@ def get_receipt_items(receipt_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve receipt items: {str(e)}'}), 500
 
-@receipt_bp.route('/<int:receipt_id>/items/summary', methods=['GET'])
+@receipt_bp.route('/<string:receipt_id>/items/summary', methods=['GET'])
 @jwt_required()
 def get_receipt_items_summary(receipt_id):
     """Get receipt items summary with aggregated information"""
@@ -158,7 +156,7 @@ def get_receipt_items_summary(receipt_id):
         return jsonify({'message': f'Failed to retrieve receipt items summary: {str(e)}'}), 500
 
 
-@receipt_bp.route('/<int:receipt_id>', methods=['DELETE'])
+@receipt_bp.route('/<string:receipt_id>', methods=['DELETE'])
 @jwt_required()
 def delete_receipt(receipt_id):
     """Delete receipt"""

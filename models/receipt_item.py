@@ -1,13 +1,15 @@
 from app import db
 from datetime import datetime
 from sqlalchemy import func
+import uuid
 
 class ReceiptItem(db.Model):
     __tablename__ = 'receipt_items'
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    receipt_id = db.Column(db.Integer, db.ForeignKey('receipts.receipt_id'), nullable=False)
-    prod_id = db.Column(db.Integer, db.ForeignKey('products.prod_id'), nullable=False)
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
+    receipt_id = db.Column(db.String(36), db.ForeignKey('receipts.receipt_id'), nullable=False)
+    prod_id = db.Column(db.String(36), db.ForeignKey('products.prod_id'), nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Numeric(12, 2), nullable=False)

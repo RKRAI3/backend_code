@@ -5,7 +5,8 @@ import uuid
 
 class Receipt(db.Model):
     __tablename__ = 'receipts'
-    receipt_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # receipt_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    receipt_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     receipt_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
     recipient_name = db.Column(db.String(50), nullable=False)
     recipient_number = db.Column(db.String(20), nullable=True)
@@ -14,7 +15,7 @@ class Receipt(db.Model):
     gross_amount = db.Column(db.Numeric(12, 2), nullable=False)
     payment_mode = db.Column(db.String(20), nullable=False)
     transaction_number = db.Column(db.String(50), nullable=True)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    created_by = db.Column(db.String(36),db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -34,8 +35,10 @@ class Receipt(db.Model):
         self.transaction_number = transaction_number
     
     def generate_receipt_number(self):
-        return f"REC-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
-    
+        return f"IN-{datetime.now().strftime('%d%m%Y')}-{str(uuid.uuid4())[:8].upper()}"
+    # def generate_receipt_number(self):
+    #     return f"REC-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+
     def soft_delete(self):
         self.deleted_at = func.now()
     
@@ -54,7 +57,7 @@ class Receipt(db.Model):
             'payment_mode': self.payment_mode,
             'transaction_number': self.transaction_number,
             'created_by': self.created_by,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'created_at': self.created_at.strftime('%d-%m-%Y') if self.created_at else None,
+            'updated_at': self.updated_at.strftime('%d-%m-%Y') if self.updated_at else None,
             'items': [item.to_dict() for item in self.receipt_items if not item.is_deleted()]
         }

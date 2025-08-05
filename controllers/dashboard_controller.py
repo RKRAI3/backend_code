@@ -10,15 +10,12 @@ dashboard_bp = Blueprint('dashboard', __name__)
 # Configure logging
 # logger = logging.getLogger(__name__)
 
-@dashboard_bp.route('/lastday_receipts', methods=['GET'])
+@dashboard_bp.route('/today_receipts', methods=['GET'])
 @jwt_required()
-def get_last_day_receipts_dashboard():
+def get_today_receipts_dashboard():
     """Get receipt dashboard with day-wise grouping and filtering"""
     try:
-        yesterday = datetime.now() - timedelta(days=1)
-        # Format as 'YYYY-MM-DD'
-        formatted_yesterday = yesterday.strftime('%Y-%m-%d')
-        start_date = formatted_yesterday
+        start_date = datetime.now().strftime('%Y-%m-%d')
         end_date = start_date
         receipts_data, error = DashboardService.get_all_receipts_dashboard(
         start_date=start_date,
@@ -26,8 +23,8 @@ def get_last_day_receipts_dashboard():
         )
         if error:
             return jsonify({
-                'status': True,
-                'message': "Failed to fetch the data of previous day"
+                'status': False,
+                'message': "Failed to fetch the data of current date"
             }), 400
         if not receipts_data:
             return jsonify({

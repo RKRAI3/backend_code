@@ -66,7 +66,7 @@ def create_product(validated_data):
     except Exception as e:
         return jsonify({'message': f'Failed to create product: {str(e)}'}), 500
 
-@product_bp.route('/<int:prod_id>', methods=['GET'])
+@product_bp.route('/<string:prod_id>', methods=['GET'])
 @jwt_required()
 def get_product(prod_id):
     """Get product by ID"""
@@ -83,7 +83,7 @@ def get_product(prod_id):
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve product: {str(e)}'}), 500
 
-@product_bp.route('/<int:prod_id>', methods=['PUT'])
+@product_bp.route('/<string:prod_id>', methods=['PUT'])
 @jwt_required()
 @validate_json(ProductUpdateSchema)
 def update_product(validated_data, prod_id):
@@ -102,7 +102,7 @@ def update_product(validated_data, prod_id):
     except Exception as e:
         return jsonify({'message': f'Failed to update product: {str(e)}'}), 500
 
-@product_bp.route('/<int:prod_id>', methods=['DELETE'])
+@product_bp.route('/<string:prod_id>', methods=['DELETE'])
 @jwt_required()
 def delete_product(prod_id):
     """Delete product"""
