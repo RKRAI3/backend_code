@@ -25,7 +25,7 @@ class ReceiptService:
             receipt_items = []
             for item_data in items_data:
                 product = Product.query.filter_by(
-                    prod_id=item_data['prod_id'], 
+                    prod_id=str(item_data['prod_id']), 
                     deleted_at=None
                 ).first()
                 
