@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.receipt_service import ReceiptService
 from validators.schemas import ReceiptCreateSchema
-from utils.decorators import validate_create_json
+from utils.decorators import validate_json
 from utils.utility import transform_receipt_data, transform_pre_generated_receipts_list
 
 receipt_bp = Blueprint('receipts', __name__)
@@ -30,7 +30,7 @@ def get_receipts():
 
 @receipt_bp.route('/create-receipt', methods=['POST'])
 @jwt_required()
-@validate_create_json(ReceiptCreateSchema)
+@validate_json(ReceiptCreateSchema)
 def create_receipt(validated_data):
     """Create a new receipt"""
     try:
