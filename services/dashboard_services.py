@@ -22,15 +22,15 @@ class DashboardService:
                     start_dt = datetime.strptime(start_date, '%Y-%m-%d')
                     query = query.filter(Receipt.created_at >= start_dt)
                 except ValueError:
-                    # return None, "Invalid start_date format. Use YYYY-MM-DD"
-                    pass
+                    return None, "Invalid start_date format. Use YYYY-MM-DD"
+                    # pass
             if end_date:
                 try:
                     end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
                     query = query.filter(Receipt.created_at < end_dt)
                 except ValueError:
-                    # return None, "Invalid end_date format. Use YYYY-MM-DD"
-                    pass
+                    return None, "Invalid end_date format. Use YYYY-MM-DD"
+                    # pass
             query = query.order_by(Receipt.created_at.desc())
             receipts = query.all()
             # Group receipts by date
@@ -56,8 +56,8 @@ class DashboardService:
                 receipts_by_date[date_key]['receipts'].append(receipt_data)
                 # Update day summary
                 receipts_by_date[date_key]['day_summary']['total_receipts'] += 1
-                receipts_by_date[date_key]['day_summary']['total_amount'] += float(receipt.total_amount)
-                receipts_by_date[date_key]['day_summary']['total_tax'] += float(receipt.tax_amount)
+                receipts_by_date[date_key]['day_summary']['total_amount'] += float(receipt.gross_amount)
+                # receipts_by_date[date_key]['day_summary']['total_tax'] += float(receipt.tax_amount)
                 receipts_by_date[date_key]['day_summary']['total_items'] += len(receipt.receipt_items)
             # Round amounts
             for date_data in receipts_by_date.values():
