@@ -17,6 +17,7 @@ def get_today_receipts_dashboard():
     try:
         start_date = datetime.now().strftime('%Y-%m-%d')
         end_date = start_date
+        # with app.app_context():
         receipts_data, error = DashboardService.get_all_receipts_dashboard(
         start_date=start_date,
         end_date=end_date,
@@ -29,7 +30,7 @@ def get_today_receipts_dashboard():
         if not receipts_data:
             return jsonify({
                 'status': True,
-                'message': "There were no receipts created on the previous day."
+                'message': "No receipts have been issued for today yet."
             }), 400
         receipts_data=transform_dashboard_data(receipts_data)        
         return jsonify({

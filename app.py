@@ -15,8 +15,6 @@ bcrypt = Bcrypt()
 def create_app():
     app = Flask(__name__)
     CORS(app, resources={r"/api/*": {"origins": "https://www.bkkprintsvc.com"}})
-    #CORS(app)
-    #CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
     # Configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
