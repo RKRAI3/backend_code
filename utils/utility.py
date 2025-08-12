@@ -13,25 +13,30 @@ def transform_receipt_data(original_data):
         'recpt_nmbr': original_data.get('receipt_number'),
         'rcpnt_nm': original_data.get('recipient_name'),
         'rcpnt_mob': original_data.get('recipient_number'),
-        'tot_amt': original_data.get('total_amount'),
-        'tax_amt': original_data.get('tax_amount'),
         'tot_incl_tax': original_data.get('gross_amount'),
         'recpt_dt': original_data.get('created_at', '').split('T')[0],  # Remove time portion
         'pmnt_mode': original_data.get('payment_mode', 'CASH'),
         'trnsaction_nmbr': original_data.get('transaction_number'),
+        'package_nm': original_data.get('package'),
         'items': []
     }
 
     # Process each item in the items list
     for item in original_data.get('items', []):
-        transformed_item = {
-            'service': item.get('product_name'),
-            'per_unt': item.get('unit_price'),
-            'nos_unt': item.get('quantity'),
-            'tot_amt': item.get('total_amount'),
-        }
+        if original_data['package']=="Full Package":
+            transformed_item = {'service': item.get('product_name'),
+                                'per_unt':0,
+                                'nos_unt': item.get('quantity'),
+                                'tot_amt':0,
+                                }
+        else:
+            transformed_item = {
+                'service': item.get('product_name', None),
+                'per_unt': item.get('vendor_price',0),
+                'nos_unt': item.get('quantity',0),
+                'tot_amt': item.get('total_vend_price',0),
+            }
         new_data['items'].append(transformed_item)
-
     return new_data
 
 def transform_pre_generated_receipts_list(receipts):

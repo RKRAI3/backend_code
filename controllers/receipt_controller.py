@@ -16,6 +16,7 @@ def get_receipts():
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
         receipts = ReceiptService.get_all_receipts(current_user_id, page, per_page)
+
         if not receipts:
             return jsonify({'message': 'Receipt not found'}), 404
         data = transform_pre_generated_receipts_list(receipts)
@@ -36,13 +37,11 @@ def create_receipt(validated_data):
         current_user_id = get_jwt_identity()
         receipt, error = ReceiptService.create_receipt(validated_data, current_user_id)
         if error:
-            return jsonify({'message': error}), 400
-        
+            return jsonify({'message inner': error}), 400
         return jsonify({
             'message': 'Receipt created successfully',
             'data': receipt.to_dict()
         }), 201
-        
     except Exception as e:
         return jsonify({'message': f'Failed to create receipt: {str(e)}'}), 500
 
@@ -51,7 +50,7 @@ def create_receipt(validated_data):
 def get_receipt(receipt_id):
     """Get receipt by ID"""
     try:
-        receipt = ReceiptService.get_receipt_by_id(receipt_id)
+        receipt = ReceiptService.get_receipt_by_id(receipt_id)            
         if not receipt:
             return jsonify({'message': 'Receipt not found'}), 404
         

@@ -14,58 +14,87 @@ class ReceiptService:
         """Create a new receipt with items"""
         try:
             items_data = receipt_data['items']
-            # tax_rate = receipt_data.get('tax_rate', 0)
-            tax_rate = ReceiptService.TAX_RATE
+            # tax_rate = receipt_data.get('tax_rate', 0)                
+            tax_rate = TAX_RATE
             recipient_name = receipt_data['recipient_name']
             recipient_number = receipt_data.get('recipient_number', None)
+            package = receipt_data.get("package","Standard")
+            package_amt = receipt_data.get("package_amt", 0)
             payment_mode = receipt_data.get('payment_mode', 'CASH')
             transaction_number = receipt_data.get('transaction_number', None)
             # Validate products exist and calculate amounts
-            subtotal = Decimal('0.00')
+            sub_tot_vend_prc = Decimal('0.00')
+            sub_tot_std_prc = Decimal('0.00')
             receipt_items = []
             for item_data in items_data:
                 product = Product.query.filter_by(
                     prod_id=str(item_data['prod_id']), 
                     deleted_at=None
                 ).first()
-                
                 if not product:
                     return None, f"Product with ID {item_data['prod_id']} not found"
                 
-                item_total = product.unit_price * item_data['quantity']
-                subtotal += item_total
-                
-                receipt_items.append({
-                    'prod_id': product.prod_id,
-                    'unit_price': product.unit_price,
-                    'quantity': item_data['quantity'],
-                    'total_amount': item_total
-                })
+                if not item_data['is_free']:
+                    total_vend_price = item_data['vendor_price'] * item_data['quantity']
+                    sub_tot_vend_prc += total_vend_price
+                    item_total = product.unit_price * item_data['quantity']
+                    sub_tot_std_prc += item_total
             
-            # Calculate tax and total
-            tax_amount = subtotal * Decimal(str(tax_rate))
-            total_amount = subtotal + tax_amount
+                    receipt_items.append({
+                        'prod_id': product.prod_id,
+                        'std_price': product.unit_price,
+                        'is_free':item_data['is_free'],
+                        'vendor_price': item_data['vendor_price'],
+                        'quantity': item_data['quantity'],
+                        'sub_tot_vend_prc': sub_tot_vend_prc,
+                        "sub_tot_std_prc": sub_tot_std_prc
+                    })
+                else:
+                    receipt_items.append({
+                        'prod_id': product.prod_id,
+                        'std_price': 0,
+                        'is_free':item_data['is_free'],
+                        'vendor_price': 0,
+                        'quantity': item_data['quantity'],
+                        'sub_tot_vend_prc': 0,
+                        "sub_tot_std_prc": 0
+                    })
+
+            tax_amount = sub_tot_vend_prc * Decimal(str(tax_rate))
+            total_amount = sub_tot_vend_prc + tax_amount
+            if receipt_data["package"]=='Full Package':
+                tax_amount = receipt_data["package_amt"] * Decimal(str(tax_rate))
+                total_amount = tax_amount + receipt_data["package_amt"]
+                
             # Create receipt
             receipt = Receipt(
                 recipient_name=recipient_name,
                 recipient_number=recipient_number,
-                total_amount=subtotal,
+                package= package,
+                package_amt=package_amt,
+                total_std_amount = sub_tot_std_prc,
+                total_vend_amount=sub_tot_vend_prc,
                 tax_amount=tax_amount,
                 gross_amount=total_amount,
                 payment_mode=payment_mode,
                 transaction_number=transaction_number,
                 created_by=created_by_id
             )
+            
             db.session.add(receipt)
             db.session.flush()  # Get receipt ID
-            
             # Create receipt items
+
             for item_data in receipt_items:
                 receipt_item = ReceiptItem(
                     receipt_id=receipt.receipt_id,
                     prod_id=item_data['prod_id'],
-                    unit_price=item_data['unit_price'],
-                    quantity=item_data['quantity']
+                    is_free = item_data['is_free'],
+                    std_price = item_data['std_price'],
+                    vendor_price = item_data['vendor_price'],
+                    quantity=item_data['quantity'],
+                    # total_std_price = item_data['sub_tot_std_prc'],
+                    # total_vend_price = item_data['sub_tot_std_prc'],
                 )
                 db.session.add(receipt_item)
             db.session.commit()

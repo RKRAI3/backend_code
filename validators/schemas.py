@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import Optional, List
 from decimal import Decimal
 from uuid import UUID
+from datetime import datetime
 
 class UserCreateSchema(BaseModel):
     user_name: str = Field(..., min_length=2, max_length=100)
@@ -54,12 +55,30 @@ class ProductUpdateSchema(BaseModel):
             return round(v, 2)
         return v
 
-class ReceiptItemSchema(BaseModel):
-    prod_id: UUID = Field(..., description="Product UUID")
-    quantity: int = Field(..., gt=0)
+# class ReceiptItemSchema(BaseModel):
+#     prod_id: UUID = Field(..., description="Product UUID")
+#     quantity: int = Field(..., gt=0)
+#     is_free: Optional[bool] = False
+class ReceiptItemBase(BaseModel):
+    prod_id: str = Field(..., min_length=36, max_length=40, description="Product UUID")
+    is_free: Optional[bool] = Field(default=False)
+    quantity: Decimal = Field(..., gt=0)
+    vendor_price: Decimal = Field(..., ge=0)
+
+class ReceiptItemCreate(ReceiptItemBase):
+    pass
+
+class ReceiptItemResponse(ReceiptItemBase):
+    id: str
+    total_std_price: Decimal
+    total_vend_price: Decimal
+    created_at: datetime
+
 
 class ReceiptCreateSchema(BaseModel):
-    items: List[ReceiptItemSchema] = Field(..., min_length=1)
+    items: List[ReceiptItemBase] = Field(..., min_length=1)
+    package: Optional[str] = Field(default='Standard', max_length=36)
+    package_amt: Optional[Decimal] = Field(default=Decimal('0'), ge=0)
     tax_rate: Optional[Decimal] = Field(default=Decimal('0'), ge=0, le=1)
     recipient_name: Optional[str] = Field(default=None, max_length=50)
     recipient_number: Optional[str] = Field(default=None, max_length=20)
