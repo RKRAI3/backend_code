@@ -23,8 +23,6 @@ def transform_receipt_data(original_data):
 
     # Process each item in the items list
     for item in original_data.get('items', []):
-        print("Items Details",item)
-        print("Package Name",original_data.get('package'))
         if original_data['package']=="Full Package":
             transformed_item = {'service': item.get('product_name'),
                                 'per_unt':0,

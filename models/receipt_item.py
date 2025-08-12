@@ -64,7 +64,7 @@ class ReceiptItem(db.Model):
             'prod_id': self.prod_id,
             'product_name': self.product.name if self.product else None,
             'std_price': float(self.std_price),
-            'vend_price': float(self.std_price),
+            'vend_price': float(self.vendor_price),
             'quantity': self.quantity,
             'total_std_price': float(self.total_std_price),
             'total_vend_price': float(self.total_vend_price),

@@ -35,7 +35,6 @@ def create_receipt(validated_data):
     """Create a new receipt"""
     try:
         current_user_id = get_jwt_identity()
-        print("Payload", validated_data)
         receipt, error = ReceiptService.create_receipt(validated_data, current_user_id)
         if error:
             return jsonify({'message inner': error}), 400
