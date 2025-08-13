@@ -11,3 +11,4 @@ ADMIN_NAME = os.getenv('ADMIN_NAME', None)
 ADMIN_ID = os.getenv('ADMIN_ID', None)
 PASSWORD = os.getenv('PASSWORD', None)
 TAX_RATE = os.getenv('TAX_RATE', None)
+TOKEN_EXPIRY = os.getenv('TOKEN_EXPIRY', 10)  # Default to 1 hour if not set
