@@ -23,6 +23,7 @@ def transform_receipt_data(original_data):
 
     # Process each item in the items list
     for item in original_data.get('items', []):
+        print("Items Details", item)
         if original_data['package']=="Full Package":
             transformed_item = {'service': item.get('product_name'),
                                 'per_unt':0,
@@ -32,7 +33,7 @@ def transform_receipt_data(original_data):
         else:
             transformed_item = {
                 'service': item.get('product_name', None),
-                'per_unt': item.get('vendor_price',0),
+                'per_unt': item.get('vend_price',0),
                 'nos_unt': item.get('quantity',0),
                 'tot_amt': item.get('total_vend_price',0),
             }
