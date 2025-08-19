@@ -4,7 +4,7 @@ from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from datetime import timedelta
-from environment import SECRET_KEY, DATABASE_URL, JWT_SECRET_KEY, ADMIN_NAME, ADMIN_ID, PASSWORD, SQLALCHEMY_TRACK_MODIFICATIONS
+from environment import SECRET_KEY, DATABASE_URL, JWT_SECRET_KEY, ADMIN_NAME, ADMIN_ID, PASSWORD, SQLALCHEMY_TRACK_MODIFICATIONS, TOKEN_EXPIRY
 
 
 # Initialize extensions
@@ -25,7 +25,7 @@ def create_app():
         'max_overflow': 20
     }
     app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(TOKEN_EXPIRY))
     app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
     
     # Initialize extensions with app

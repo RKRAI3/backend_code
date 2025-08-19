@@ -24,8 +24,8 @@ class AuthService:
             identity=str(user.user_id),
             additional_claims=additional_claims
         )
-        refresh_token = create_refresh_token(identity=user.user_id)
-        
+        # refresh_token = create_refresh_token(identity=user.user_id)
+        refresh_token =None
         return {
             'access_token': access_token,
             'refresh_token': refresh_token,

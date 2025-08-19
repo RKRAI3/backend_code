@@ -88,7 +88,7 @@ def get_receipts_dashboard():
         if not result:
             return jsonify({
                 'status': True,
-                'message': "There were no receipts created for the selected time period"
+                'message': "No receipts found for the selected time period"
             }), 400
         receipts_data=transform_dashboard_data(result["receipts_by_date"])  
         return jsonify({
