@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from services.dashboard_services import DashboardService
 from utils.utility import transform_dashboard_data
 from datetime import datetime, timedelta
@@ -7,16 +7,13 @@ from datetime import datetime, timedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
-# Configure logging
-# logger = logging.getLogger(__name__)
-
 @dashboard_bp.route('/today_receipts', methods=['GET'])
 @jwt_required()
 def get_today_receipts_dashboard():
     """Get receipt dashboard with day-wise grouping and filtering"""
     try:
         start_date = datetime.now().strftime('%Y-%m-%d')
-        end_date = start_date
+        end_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
         # with app.app_context():
         receipts_data, error = DashboardService.get_all_receipts_dashboard(
         start_date=start_date,
@@ -72,7 +69,7 @@ def get_receipts_dashboard():
                 'message': 'Per page must be between 1 and 100'
             }), 400
         
-        # Call service
+        # Call service            
         result, error = DashboardService.get_receipts_dashboard(
             start_date=start_date,
             end_date=end_date,
@@ -85,7 +82,7 @@ def get_receipts_dashboard():
                 'status': False,
                 'message':"Failed to fetch the data for the given date period."
             }), 400
-        if not result:
+        if not result['receipts_by_date']:
             return jsonify({
                 'status': True,
                 'message': "No receipts found for the selected time period"
