@@ -57,27 +57,27 @@ def get_receipts_dashboard():
         # Get query parameters
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 20))
+        # page = int(request.args.get('page', 1))
+        # per_page = int(request.args.get('per_page', 20))
         # Validate pagination parameters
-        if page < 1:
-            return jsonify({
-                'status': False,
-                'message': 'Page number must be greater than 0'
-            }), 400
+        # if page < 1:
+        #     return jsonify({
+        #         'status': False,
+        #         'message': 'Page number must be greater than 0'
+        #     }), 400
         
-        if per_page < 1 or per_page > 100:
-            return jsonify({
-                'status': False,
-                'message': 'Per page must be between 1 and 100'
-            }), 400
+        # if per_page < 1 or per_page > 100:
+        #     return jsonify({
+        #         'status': False,
+        #         'message': 'Per page must be between 1 and 100'
+        #     }), 400
         
         # Call service
         result, error = DashboardService.get_receipts_dashboard(
             start_date=start_date,
             end_date=end_date,
-            page=page,
-            per_page=per_page
+            # page=page,
+            # per_page=per_page
         )
         
         if error:
