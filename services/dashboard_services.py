@@ -103,7 +103,7 @@ class DashboardService:
             receipts_paginated = query.all()
             # Group receipts by date
             receipts_by_date = {}
-            for receipt in receipts_paginated.items:                
+            for receipt in receipts_paginated:                
                 date_key = receipt.created_at.strftime('%d-%m-%Y')
                 if date_key not in receipts_by_date:
                     receipts_by_date[date_key] = {

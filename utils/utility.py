@@ -8,12 +8,14 @@ from datetime import datetime, timedelta
 
 
 def transform_receipt_data(original_data):
+    print("Original input", original_data)
     # Extract and transform the data
     new_data = {
         'recpt_nmbr': original_data.get('receipt_number'),
         'rcpnt_nm': original_data.get('recipient_name'),
         'rcpnt_mob': original_data.get('recipient_number'),
         'tot_incl_tax': original_data.get('gross_amount'),
+        'tax_paid': original_data.get('tax_amount'),
         'recpt_dt': original_data.get('created_at', '').split('T')[0],  # Remove time portion
         'pmnt_mode': original_data.get('payment_mode', 'CASH'),
         'trnsaction_nmbr': original_data.get('transaction_number'),
