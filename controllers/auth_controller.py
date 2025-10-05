@@ -15,6 +15,7 @@ def login(validated_data):
     try:
         email = validated_data['email']
         password = validated_data['password']
+        print(f"Attempting login for email: {email} and password: {password}")
         user = AuthService.authenticate_user(email, password)
         if not user:
             return jsonify({'message': 'Invalid email or password'}), 401

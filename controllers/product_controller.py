@@ -90,7 +90,6 @@ def update_product(validated_data, prod_id):
     """Update product information"""
     try:
         product, error = ProductService.update_product(prod_id, validated_data)
-        
         if error:
             return jsonify({'message': error}), 400
         

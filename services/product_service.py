@@ -12,11 +12,9 @@ class ProductService:
                 unit_price=product_data['unit_price'],
                 created_by=created_by_id
             )
-            
             db.session.add(product)
             db.session.commit()
             return product, None
-            
         except Exception as e:
             db.session.rollback()
             return None, str(e)
@@ -60,11 +58,9 @@ class ProductService:
             product = Product.query.filter_by(prod_id=prod_id, deleted_at=None).first()
             if not product:
                 return False, "Product not found"
-            
             product.soft_delete()
             db.session.commit()
             return True, None
-            
         except Exception as e:
             db.session.rollback()
             return False, str(e)
