@@ -75,7 +75,7 @@ class DashboardService:
 
 
     @staticmethod
-    def get_receipts_dashboard(start_date=None, end_date=None, page=1, per_page=20):
+    def get_receipts_dashboard(start_date=None, end_date=None):
         """Get receipt dashboard with day-wise grouping and filtering"""
         try:
             # with app.app_context():
@@ -104,9 +104,10 @@ class DashboardService:
                 receipts_paginated = query.all()  
                 receipts_paginated = [rcpt.to_dict() for rcpt in receipts_paginated]
             # Paginate results
-            receipts_paginated = query.paginate(
-                page=page, per_page=per_page, error_out=False
-            )
+            # receipts_paginated = query.paginate(
+            #     page=page, per_page=per_page, error_out=False
+            # )
+            receipts_paginated = query.all()
             # Group receipts by date
             receipts_by_date = {}
             for receipt in receipts_paginated:      
@@ -143,14 +144,14 @@ class DashboardService:
             receipts_list = list(receipts_by_date.values())
             return {
                 'receipts_by_date': receipts_list,
-                'pagination': {
-                    'page': receipts_paginated.page,
-                    'per_page': receipts_paginated.per_page,
-                    'total': receipts_paginated.total,
-                    'pages': receipts_paginated.pages,
-                    'has_next': receipts_paginated.has_next,
-                    'has_prev': receipts_paginated.has_prev
-                }
+                # 'pagination': {
+                #     'page': receipts_paginated.page,
+                #     'per_page': receipts_paginated.per_page,
+                #     'total': receipts_paginated.total,
+                #     'pages': receipts_paginated.pages,
+                #     'has_next': receipts_paginated.has_next,
+                #     'has_prev': receipts_paginated.has_prev
+                # }
             }, None
             
         except Exception as e:
