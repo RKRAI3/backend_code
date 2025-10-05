@@ -64,7 +64,7 @@ class ReceiptService:
             total_amount = sub_tot_vend_prc + tax_amount
             if receipt_data["package"]=='Full Package':
                 tax_amount = receipt_data["package_amt"] * Decimal(str(tax_rate))
-                total_amount = tax_amount + receipt_data["package_amt"]
+                total_amount = receipt_data["package_amt"]
                 
             # Create receipt
             receipt = Receipt(
