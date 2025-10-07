@@ -4,6 +4,75 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from flask import jsonify
 
+
+from openpyxl.utils import get_column_letter
+
+def add_quantity_and_revenue_sheets(wb, dashboard_data, currency='₿'):
+    quantity_report = dashboard_data.get("quantity_report", [])
+    revenue_report = dashboard_data.get("revenue_report", [])
+
+    # Define styles
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    header_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
+    bold_font = Font(bold=True)
+
+    # Helper function to write a full sheet (used for both reports)
+    def write_report(sheet_name, data, is_currency=False):
+        if not data:
+            return
+
+        ws = wb.create_sheet(sheet_name)
+        headers = list(data[0].keys())
+
+        # Write headers
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.font = bold_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = thin_border
+
+        # Write data rows
+        for row_num, record in enumerate(data, 2):
+            for col_num, header in enumerate(headers, 1):
+                value = record[header]
+                cell = ws.cell(row=row_num, column=col_num, value=value)
+                cell.border = thin_border
+
+                if isinstance(value, (int, float)):
+                    if is_currency and header not in ["receipt_number", "created_at"]:
+                        cell.number_format = f'"{currency}"#,##0.00'
+
+        # Add totals row at the end (sum of all numeric columns)
+        last_row = len(data) + 2
+        ws.cell(row=last_row, column=1, value="TOTALS").font = bold_font
+        ws.cell(row=last_row, column=1).alignment = Alignment(horizontal='right')
+
+        for col_num, header in enumerate(headers, 1):
+            if header not in ["receipt_number", "created_at"]:
+                col_letter = get_column_letter(col_num)
+                formula = f"=SUM({col_letter}2:{col_letter}{last_row-1})"
+                total_cell = ws.cell(row=last_row, column=col_num, value=formula)
+                total_cell.font = bold_font
+                total_cell.border = thin_border
+                if is_currency:
+                    total_cell.number_format = f'"{currency}"#,##0.00'
+
+        # Auto-fit column widths
+        for col in ws.columns:
+            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+            ws.column_dimensions[col[0].column_letter].width = max(max_length + 2, 12)
+
+    # Create both sheets
+    write_report("Quantity Report", quantity_report, is_currency=False)
+    write_report("Revenue Report", revenue_report, is_currency=True)
+
+
 def generate_comprehensive_excel_report(dashboard_data, currency):
     """
     Generate comprehensive Excel report with multiple sheets
@@ -335,6 +404,8 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
     ws_sales.column_dimensions['A'].width = 15
     for i in range(2, total_col + 1):
         ws_sales.column_dimensions[openpyxl.utils.get_column_letter(i)].width = 14
+    
+    add_quantity_and_revenue_sheets(wb, dashboard_data, currency='₿')
     
     # Save to BytesIO
     excel_buffer = BytesIO()

@@ -345,7 +345,7 @@ class DashboardService:
         df['total_std_price'] = df['total_std_price'].astype(int)
         return  (
             df.groupby("period_group")
-            .agg(revenue=("total_std_price", "sum"),
+            .agg(revenue=("total_vend_price", "sum"),
                 receipts=("receipt_number", pd.Series.nunique))
             .reset_index()
             .rename(columns={"period_group": "date"})
@@ -413,7 +413,7 @@ class DashboardService:
         # Group by date and product name
         grouped = df.groupby([df['created_at'], 'product_name']).agg(
             total_quantity=('quantity', 'sum'),
-            total_revenue=('total_std_price', 'sum')
+            total_revenue=('total_vend_price', 'sum')
         ).reset_index()
 
         # Loop through grouped data and build the nested structure
@@ -429,6 +429,32 @@ class DashboardService:
             report[date][product] = {'quantity': quantity, 'revenue': revenue}
             print("create_sales_report_data function finished")
         return report
+    
+    def periodic_product_revenue(currentproductRevenue, prev_productRevenue):
+        # Combine both periods for comparison
+        product_comparison = []
+        current_products = {item['name']: item for item in currentproductRevenue}
+        prev_products = {item['name']: item for item in prev_productRevenue}
+
+        for product in currentproductRevenue:
+            product_comparison.append({
+                'name': product['name'],
+                'current_revenue': product['revenue'],
+                'prev_revenue': prev_products.get(product['name'], {}).get('revenue', 0),
+                'current_quantity': product['quantity'],
+                'prev_quantity': prev_products.get(product['name'], {}).get('quantity', 0),
+            })
+        # Add products that only existed in previous period
+        for prev_product in prev_productRevenue:
+            if prev_product['name'] not in current_products:
+                product_comparison.append({
+                    'name': prev_product['name'],
+                    'current_revenue': 0,
+                    'prev_revenue': prev_product['revenue'],
+                    'current_quantity': 0,
+                    'prev_quantity': prev_product['quantity']
+                })
+        return product_comparison
 
     # ------------------ Main Function ------------------
     @staticmethod
@@ -474,6 +500,7 @@ class DashboardService:
 
             # --- Build DataFrames ---
             receipt_df = pd.DataFrame(receipts)
+            # receipt_df.to_csv(r"C:\Users\RAVI KANT\Documents\backend_code\ravi.csv")
             items = []
             for r in receipts:
                 for itm in r['items']:
@@ -482,10 +509,11 @@ class DashboardService:
                 #     itm["package"] = r['package']
                 items.extend(r["items"])
             items_df = pd.DataFrame(items)      
+            # items_df.to_csv(r"C:\Users\RAVI KANT\Documents\backend_code\items.csv")
             # print("Initial Items DF:\n", items_df.head())            
             # Add Package as Services rows
             full_pkg = receipt_df[receipt_df["package"] == package].rename(
-                columns={"package": "product_name", "package_amt": "std_price"}
+                columns={"package": "product_name", "gross_amount": "std_price"}
             )
             full_pkg = full_pkg.reset_index(drop=True)
             # itm_lst = []
@@ -506,7 +534,7 @@ class DashboardService:
             full_pkg['created_at'] = full_pkg['created_at_from_df1']
             # Drop the temporary column 'created_at_from_df1' if it's no longer needed
             full_pkg.drop(columns=['created_at_from_df1'], inplace=True)
-
+            items_df = items_df[~items_df['receipt_number'].isin(full_pkg['receipt_number'])]
             merged_df = pd.concat([items_df, full_pkg], ignore_index=True, sort=False)
             merged_df["quantity"] = merged_df["quantity"].fillna(1)
             # merged_df["created_at"] = pd.to_datetime(merged_df["created_at"], errors="coerce")
@@ -518,19 +546,22 @@ class DashboardService:
             merged_df.loc[cond, "total_vend_price"] = merged_df.loc[cond, "std_price"]
             merged_df.loc[cond, "vend_price"] = merged_df.loc[cond, "std_price"]
             merged_df.drop(['id', 'receipt_id', 'prod_id','free','recipient_name', 'recipient_number',
-            'tot_std_amt', 'tot_vend_amt', 'tax_amount', 'gross_amount',
-            'payment_mode', 'transaction_number', 'created_by','updated_at','items'], axis =1, inplace=True)
+            'tot_vend_amt','tot_std_amt', 'tax_amount', 'payment_mode', 'transaction_number', 'created_by','updated_at','items'], axis =1, inplace=True)
+            
             # --- Totals ---
+            # merged_df.to_csv(r"C:\Users\RAVI KANT\Documents\backend_code\ravimerged.csv")
             totalReceipts = receipt_df.shape[0]
+            totalRevenue = receipt_df['gross_amount'].sum()
             # totalRevenue = merged_df["total_vend_price"].sum()
+            # total_vend_price is equalto gross_amount 
             totalStdRevenue = merged_df["total_std_price"].sum()
             totalProducts = merged_df["quantity"].sum()
             uniqueProducts = merged_df["product_name"].nunique()
-
+            uniqueProductslist = merged_df["product_name"].unique().tolist()
             # --- Product Revenue breakdown ---
             productRevenue = (
                 merged_df.groupby("product_name")
-                .agg(revenue=("total_std_price", "sum"),
+                .agg(revenue=("total_vend_price", "sum"),
                         quantity=("quantity", "sum"))
                 .reset_index()
                 .rename(columns={"product_name": "name"})
@@ -545,10 +576,18 @@ class DashboardService:
                 .rename(columns={"product_name": "name"})
                 .to_dict("records")
             )
+            # priceComparison = (
+            #     merged_df.groupby("product_name")
+            #     .agg(std_price=("std_price", "sum"),
+            #             vend_price=("vend_price", "sum"))
+            #     .reset_index()
+            #     .rename(columns={"product_name": "name"})
+            #     .to_dict("records")
+            # )
             revenueOverTime = DashboardService.group_revenue_over_time(merged_df, 'today')
             # print("Revenue Over Time:\n", revenueOverTime)
             # --- Trends (compare with previous period) ---
-            # with app_context():
+            # with app.app_context():
             prev_receipts = DashboardService.get_previous_period_data(start_date, end_date) if (start_date and end_date) else []
             # print(f"Previous period receipts count: {len(prev_receipts)}")
             if prev_receipts:
@@ -556,14 +595,24 @@ class DashboardService:
                 for r in prev_receipts:
                     prev_items.extend(r["items"])
                 prev_df = pd.DataFrame(prev_items)
-                prev_totalRevenue = prev_df["total_std_price"].sum()
+                prev_totalRevenue = prev_df["total_vend_price"].sum()
                 prev_totalReceipts = len(prev_receipts)
                 prev_totalProducts = prev_df["quantity"].sum()
                 prev_uniqueProducts = prev_df["product_name"].nunique()
+                # --- Product Revenue breakdown ---
+                prev_productRevenue = (
+                    prev_df.groupby("product_name")
+                    .agg(revenue=("total_vend_price", "sum"),
+                            quantity=("quantity", "sum"))
+                    .reset_index()
+                    .rename(columns={"product_name": "name"})
+                    .to_dict("records")
+                )   
             else:
                 prev_totalRevenue = prev_totalReceipts = prev_totalProducts = prev_uniqueProducts = 0
-
-            revenueTrend = DashboardService.calc_trend(totalStdRevenue, prev_totalRevenue)
+                prev_productRevenue = []
+            product_comparison = DashboardService.periodic_product_revenue(productRevenue, prev_productRevenue)
+            revenueTrend = DashboardService.calc_trend(totalRevenue, prev_totalRevenue)
             receiptsTrend = DashboardService.calc_trend(totalReceipts, prev_totalReceipts)
             productTrend = DashboardService.calc_trend(totalProducts, prev_totalProducts)
             uniqueProductTrend = DashboardService.calc_trend(uniqueProducts, prev_uniqueProducts)
@@ -607,9 +656,8 @@ class DashboardService:
             df_qt = merged_df.pivot_table(index=["receipt_number","created_at"], columns="product_name", values="quantity", aggfunc="sum", fill_value=0)
             df_qt = df_qt.reset_index()
             
-            df_prc = merged_df.pivot_table(index=["receipt_number", "created_at"], columns="product_name", values="total_std_price", aggfunc="sum", fill_value=0)
+            df_prc = merged_df.pivot_table(index=["receipt_number", "created_at"], columns="product_name", values="total_vend_price", aggfunc="sum", fill_value=0)
             df_prc = df_prc.reset_index()
-            print("Yahan Tak to Chala hoga")
             if package in df_prc.columns:
                 df_prc2 = df_prc[df_prc[package]!=0]
                 df_prc1 = df_prc[df_prc[package]==0]
@@ -621,10 +669,13 @@ class DashboardService:
             dashboard_data = {
                 "period": period,
                 "totalReceipts": totalReceipts,
+                "totalRevenue": totalRevenue,
+                "prev_totalRevenue": prev_totalRevenue,
                 "totalStdRevenue": totalStdRevenue,
                 "totalProducts": totalProducts,
                 "uniqueProducts": uniqueProducts,
                 "productRevenue": productRevenue,
+                "product_comparison":product_comparison,
                 "revenueOverTime": revenueOverTime,
                 "priceComparison": priceComparison,
                 "revenueTrend": revenueTrend,
@@ -643,11 +694,13 @@ class DashboardService:
             response["data"] = {
                 "period": period,
                 "totalReceipts": totalReceipts,
-                # "totalRevenue": totalRevenue,
+                "totalRevenue": totalRevenue,
+                "prev_totalRevenue": prev_totalRevenue,
                 "totalStdRevenue": totalStdRevenue,
                 "totalProducts": totalProducts,
                 "uniqueProducts": uniqueProducts,
                 "productRevenue": productRevenue,
+                "product_comparison":product_comparison,
                 "revenueOverTime": revenueOverTime,
                 "priceComparison": priceComparison,
                 "revenueTrend": revenueTrend,
@@ -657,6 +710,7 @@ class DashboardService:
                 "growthTrend": growthTrend,    
                 "quantity_report": df_qt.to_dict('records'),
                 "revenue_report": df_prc.to_dict('records'),
+                "uniqueProductslist": uniqueProductslist,
                 "sales_report": excel_blob
             }
             response['period'] = period
