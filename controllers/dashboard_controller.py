@@ -107,13 +107,10 @@ def get_receipts_dashboard():
 
 @dashboard_bp.route('/dashboard-data', methods=['GET'])
 def get_dashboard_data():
-    print("Fetching dashboard data...")
     # Get the period parameter
     start_date = None
     end_date = None
     period = request.args.get('period', 'all')
-    print(f"Received period: {period}")
-
     api_base_url = request.url_root.rstrip('/')
     currency = "₿"
     package = "Full Package"
@@ -142,14 +139,6 @@ def get_dashboard_data():
         if start_date and end_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime('%Y-%m-%d')
             end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime('%Y-%m-%d')
-
-    # elif period == 'custom' and start_date and end_date:
-    #     start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    #     end_date = datetime.strptime(end_date, '%Y-%m-%d')
-    # elif period == 'all':
-    #     start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    #     end_date = datetime.strptime(end_date, '%Y-%m-%d')
-    print(f"Period: {period}, Start Date: {start_date}, End Date: {end_date}")
     response = DashboardService.get_dashboard_data(
         start_date=start_date,
         end_date=end_date,

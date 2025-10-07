@@ -471,10 +471,9 @@ class DashboardService:
                     start_date = datetime.strptime(start_date, '%Y-%m-%d')
                 except ValueError:
                     response["message"] = "Invalid start_date format. Use YYYY-MM-DD"
-                    # return jsonify(response, 400)
+                    return jsonify(response, 400)
                     # return response
             if start_date and isinstance(start_date, datetime):
-                print("Filtering from start_date:", start_date)
                 query = query.filter(Receipt.created_at >= start_date)
     
             if end_date and not isinstance(start_date, datetime):
@@ -484,7 +483,7 @@ class DashboardService:
                     query = query.filter(Receipt.created_at < end_date)
                 except ValueError:
                     response["message"] = "Invalid end_date format. Use YYYY-MM-DD"
-                    # return jsonify(response, 400)
+                    return jsonify(response, 400)
                     # return response
             if end_date and isinstance(end_date, datetime):
                 print("Filtering up to end_date:", end_date)
@@ -509,20 +508,12 @@ class DashboardService:
                 #     itm["package"] = r['package']
                 items.extend(r["items"])
             items_df = pd.DataFrame(items)      
-            # items_df.to_csv(r"C:\Users\RAVI KANT\Documents\backend_code\items.csv")
-            # print("Initial Items DF:\n", items_df.head())            
+                 
             # Add Package as Services rows
             full_pkg = receipt_df[receipt_df["package"] == package].rename(
                 columns={"package": "product_name", "gross_amount": "std_price"}
             )
             full_pkg = full_pkg.reset_index(drop=True)
-            # itm_lst = []
-            # for rc in items_df['receipt_id'].tolist():
-            #     if rc not in itm_lst and rc in full_pkg['receipt_id'].tolist():
-            #         itm_lst.append(rc)
-            # for v in full_pkg['receipt_id'].tolist():
-            #     if v not in itm_lst:
-            #         print(v)
                     
             tmp_df =items_df[items_df['receipt_id'].isin(full_pkg['receipt_id'])]
             tmp_df = tmp_df.drop_duplicates(subset=['receipt_id'], keep='first')
@@ -585,8 +576,7 @@ class DashboardService:
             #     .to_dict("records")
             # )
             revenueOverTime = DashboardService.group_revenue_over_time(merged_df, 'today')
-            # print("Revenue Over Time:\n", revenueOverTime)
-            # --- Trends (compare with previous period) ---
+
             # with app.app_context():
             prev_receipts = DashboardService.get_previous_period_data(start_date, end_date) if (start_date and end_date) else []
             # print(f"Previous period receipts count: {len(prev_receipts)}")
@@ -714,9 +704,7 @@ class DashboardService:
                 "sales_report": excel_blob
             }
             response['period'] = period
-            print("Final response data:\n", response)
             return jsonify(response, 200) 
         except Exception as e:
-            print(f"Error fetching dashboard data: {str(e)}")
             response["message"] = str(e)
             return jsonify(response, 500)          
