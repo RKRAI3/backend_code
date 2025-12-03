@@ -470,28 +470,36 @@ class DashboardService:
                     print("Parsing start_date:", start_date)
                     start_date = datetime.strptime(start_date, '%Y-%m-%d')
                 except ValueError:
+                    print("Invalid start_date format")
                     response["message"] = "Invalid start_date format. Use YYYY-MM-DD"
                     return jsonify(response, 400)
                     # return response
             if start_date and isinstance(start_date, datetime):
                 query = query.filter(Receipt.created_at >= start_date)
-    
-            if end_date and not isinstance(start_date, datetime):
+                # receipts = query.order_by(Receipt.created_at.desc()).all()
+                # receipts = [r.to_dict() for r in receipts]
+                # print("result from start_date:", receipts)
+            if end_date and not isinstance(end_date, datetime):
                 try:
                     print("Parsing end_date:", end_date)
                     end_date = datetime.strptime(end_date, '%Y-%m-%d')
+                    end_date = end_date + timedelta(days=1)
+                    print("Filtering up to end_date (adjusted):", end_date)
                     query = query.filter(Receipt.created_at < end_date)
                 except ValueError:
+                    print("Invalid end_date format")
                     response["message"] = "Invalid end_date format. Use YYYY-MM-DD"
                     return jsonify(response, 400)
                     # return response
+            print("End date before processing:", end_date)
             if end_date and isinstance(end_date, datetime):
-                print("Filtering up to end_date:", end_date)
+                print("Filtering up to end_date:", start_date,end_date)
                 end_date = end_date + timedelta(days=1)
+                print("Filtering up to end_date (adjusted):", end_date)
                 query = query.filter(Receipt.created_at < end_date)
             receipts = query.order_by(Receipt.created_at.desc()).all()
             receipts = [r.to_dict() for r in receipts]
-                # print(f"Receipts are",receipts)
+            # print(f"Receipts are",receipts)
             if not receipts:
                 response["message"] = "No records available for the selected time period"
                 return jsonify(response, 204)
@@ -499,6 +507,7 @@ class DashboardService:
 
             # --- Build DataFrames ---
             receipt_df = pd.DataFrame(receipts)
+            print("Reeceipt DF", receipt_df)
             # receipt_df.to_csv(r"C:\Users\RAVI KANT\Documents\backend_code\ravi.csv")
             items = []
             for r in receipts:
