@@ -75,7 +75,7 @@ class Receipt(db.Model):
             'payment_mode': self.payment_mode,
             'transaction_number': self.transaction_number,
             'created_by': self.created_by,
-            'created_at': self.created_at.strftime('%d-%m-%Y') if self.created_at else None,
+            'created_at': self.created_at.strftime('%d-%m-%Y %H:%M:%S') if self.created_at else None,
             'updated_at': self.updated_at.strftime('%d-%m-%Y') if self.updated_at else None,
             'items': [item.to_dict() for item in self.receipt_items if not item.is_deleted()]
         }

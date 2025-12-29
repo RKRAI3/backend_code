@@ -50,7 +50,8 @@ def create_receipt(validated_data):
 def get_receipt(receipt_id):
     """Get receipt by ID"""
     try:
-        receipt = ReceiptService.get_receipt_by_id(receipt_id)            
+        receipt = ReceiptService.get_receipt_by_id(receipt_id)    
+        print("Receipt is", receipt.to_dict())        
         if not receipt:
             return jsonify({'message': 'Receipt not found'}), 404
         

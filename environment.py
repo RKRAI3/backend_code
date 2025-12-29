@@ -12,3 +12,14 @@ ADMIN_ID = os.getenv('ADMIN_ID', None)
 PASSWORD = os.getenv('PASSWORD', None)
 TAX_RATE = os.getenv('TAX_RATE', None)
 TOKEN_EXPIRY = os.getenv('TOKEN_EXPIRY', 10)  # Default to 1 hour if not set
+
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
+SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+FROM_EMAIL = os.getenv('FROM_EMAIL')
+FROM_NAME = os.getenv('FROM_NAME', 'BKK Print Service')
+
+# Currency
+CURRENCY = os.getenv("CURRENCY","฿")
+# CURRENCY = os.getenv("CURRENCY","₩")

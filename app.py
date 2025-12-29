@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from datetime import timedelta
 from environment import SECRET_KEY, DATABASE_URL, JWT_SECRET_KEY, ADMIN_NAME, ADMIN_ID, PASSWORD, SQLALCHEMY_TRACK_MODIFICATIONS, TOKEN_EXPIRY
-
+import atexit
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -42,6 +42,7 @@ def create_app():
     from controllers.receipt_controller import receipt_bp
     from controllers.receipt_item_controller import receipt_item_bp
     from controllers.dashboard_controller import dashboard_bp
+    from controllers.scheduler_controller import scheduler_bp
     @app.route("/")
     def home():
         return "Welcome!"
@@ -51,7 +52,7 @@ def create_app():
     app.register_blueprint(product_bp, url_prefix='/api/products')
     app.register_blueprint(receipt_bp, url_prefix='/api/receipts')
     app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
-    
+    app.register_blueprint(scheduler_bp, url_prefix='/api/scheduler')
     
     # Create tables
     with app.app_context():
@@ -69,5 +70,13 @@ def create_app():
             )
             db.session.add(admin_user)
             db.session.commit()
+    # Initialize and start scheduler
+    global scheduler_service
+    from services.scheduler_service import SchedulerService
+    scheduler_service = SchedulerService(app)
+    scheduler_service.start()
+    
+    # Shutdown scheduler when app stops
+    atexit.register(lambda: scheduler_service.stop() if scheduler_service else None)
     
     return app
