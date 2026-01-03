@@ -21,6 +21,7 @@ class EmailService:
         self.smtp_password = SMTP_PASSWORD
         self.from_email = FROM_EMAIL
         self.from_name = FROM_NAME
+        print("Config Data", SMTP_SERVER,  int(SMTP_PORT),SMTP_USERNAME, SMTP_PASSWORD, FROM_EMAIL), FROM_NAME
     
     def _clean_header(self, value: str) -> str:
 
@@ -50,15 +51,17 @@ class EmailService:
                 self.from_email
             ))
             msg['To'] = ', '.join(to_emails)
-
+            print("SUBJECT is", msg['Subject'])
+            print("FROM is", msg['From'])
+            print("TO", msg['To'])
             # Clean NBSP defensively
             if text_content:
                 text_content = text_content.replace('\xa0', ' ')
                 msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
-
+                print("Text content", text_content)
             html_content = html_content.replace('\xa0', ' ')
             msg.attach(MIMEText(html_content, 'html', 'utf-8'))
-
+            print("HTML CONTENT", html_content)
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
@@ -68,7 +71,7 @@ class EmailService:
                 to_emails,
                 msg.as_bytes(policy=SMTPUTF8)
             )
-
+            
             print("✅ Email sent successfully")
             return True, None
 
