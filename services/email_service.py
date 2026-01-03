@@ -21,10 +21,27 @@ class EmailService:
         self.smtp_password = SMTP_PASSWORD
         self.from_email = FROM_EMAIL
         self.from_name = FROM_NAME
+    
+    def _clean_header(self, value: str) -> str:
+
+        if not value:
+            return value
+        return (
+            value
+            .replace('\xa0', ' ')
+            .replace('\u200b', '')  # zero-width space
+            .strip()
+        )
+
 
     def send_email(self, to_emails, subject, html_content, text_content=None):
         try:
             msg = MIMEMultipart('alternative')
+            
+            subject = self._clean_header(subject)
+            from_name = self._clean_header(self.from_name)
+            from_email = self._clean_header(self.from_email)
+            to_emails = [self._clean_header(e) for e in to_emails]
 
             # ✅ UTF-8 safe headers
             msg['Subject'] = Header(subject, 'utf-8')
