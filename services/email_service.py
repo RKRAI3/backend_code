@@ -62,7 +62,12 @@ class EmailService:
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
-                server.send_message(msg)
+                # server.send_message(msg)
+                server.sendmail(
+                from_email,
+                to_emails,
+                msg.as_bytes(policy=SMTPUTF8)
+            )
 
             print("✅ Email sent successfully")
             return True, None
