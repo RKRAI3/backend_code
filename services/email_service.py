@@ -17,46 +17,87 @@ class EmailService:
     def __init__(self):
         self.smtp_server = SMTP_SERVER
         self.smtp_port = int(SMTP_PORT)
-        self.smtp_username = SMTP_USERNAME
-        self.smtp_password = SMTP_PASSWORD
-        self.from_email = FROM_EMAIL
-        self.from_name = FROM_NAME
+        
+        # Clean credentials - remove non-breaking spaces and other special chars
+        def clean_string(s):
+            if s is None:
+                return ''
+            return str(s).replace('\xa0', '').replace('\u200b', '').replace(' ', '').strip()
+        
+        self.smtp_username = clean_string(SMTP_USERNAME)
+        self.smtp_password = clean_string(SMTP_PASSWORD)
+        self.from_email = clean_string(FROM_EMAIL)
+        self.from_name = str(FROM_NAME).replace('\xa0', ' ').replace('\u200b', '').strip() if FROM_NAME else ''
+        
+        print("Config loaded:")
+        print(f"  Server: {SMTP_SERVER}:{int(SMTP_PORT)}")
+        print(f"  Username: {self.smtp_username}")
+        print(f"  Password length: {len(self.smtp_password)}")
+        print(f"  From: {self.from_name} <{self.from_email}>")
+        
+        # Debug: Check for problematic characters
+        if any(ord(c) > 127 for c in self.smtp_password):
+            print("⚠️  WARNING: Password contains non-ASCII characters!")
+            print(f"  Password bytes: {self.smtp_password.encode('utf-8')}")
+    
+    def _clean_header(self, value: str) -> str:
+        """Clean header values of problematic characters"""
+        if not value:
+            return value
+        return (
+            value
+            .replace('\xa0', ' ')
+            .replace('\u200b', '')  # zero-width space
+            .strip()
+        )
 
     def send_email(self, to_emails, subject, html_content, text_content=None):
         try:
             msg = MIMEMultipart('alternative')
+            
+            # Clean headers - be more aggressive
+            subject = self._clean_header(subject)
+            from_name = self._clean_header(self.from_name)
+            from_email = self._clean_header(self.from_email)
+            to_emails = [self._clean_header(e) for e in to_emails]
 
-            # ✅ UTF-8 safe headers
-            msg['Subject'] = Header(subject, 'utf-8')
-            msg['From'] = formataddr((
-                str(Header(self.from_name, 'utf-8')),
-                self.from_email
-            ))
+            # UTF-8 safe headers - simplified approach
+            msg['Subject'] = str(Header(subject, 'utf-8'))
+            # Use simple string formatting instead of formataddr
+            msg['From'] = f"{from_name} <{from_email}>"
             msg['To'] = ', '.join(to_emails)
-
-            # Clean NBSP defensively
+            
+            print("SUBJECT is", msg['Subject'])
+            print("FROM is", msg['From'])
+            print("TO", msg['To'])
+            
+            # Clean and attach content
             if text_content:
                 text_content = text_content.replace('\xa0', ' ')
                 msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
-
+                print("Text content", text_content[:100])
+            
             html_content = html_content.replace('\xa0', ' ')
             msg.attach(MIMEText(html_content, 'html', 'utf-8'))
-
+            print("HTML CONTENT", html_content[:100])
+            
+            # Send email using send_message (simplest approach)
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
-
+            
             print("✅ Email sent successfully")
             return True, None
 
         except Exception as e:
             print("❌ Email send failed:", str(e))
+            import traceback
+            traceback.print_exc()
             return False, str(e)
 
-    # ---------------- ALERT EMAIL ---------------- #
-
     def send_no_receipts_alert(self, to_emails, date):
+        """Send alert when no receipts are generated"""
         date_str = date.strftime('%B %d, %Y')
         day_name = date.strftime('%A')
 
@@ -86,9 +127,8 @@ This is an automated message from BKK Print Service
 
         return self.send_email(to_emails, subject, html_content, text_content)
 
-    # ---------------- DAILY SUMMARY ---------------- #
-
     def send_daily_summary(self, to_emails, date, summary_data, currency):
+        """Send daily summary email with receipt statistics"""
         date_str = date.strftime('%B %d, %Y')
         day_name = date.strftime('%A')
 
@@ -97,151 +137,113 @@ This is an automated message from BKK Print Service
         total_receipts = summary_data.get('total_receipts', 0)
         total_revenue = summary_data.get('total_revenue', 0)
 
+        # Plain Text
         text_content = f"""
 Daily Summary Report
 
 Date: {date_str} ({day_name})
 
-Total Receipts: {total_receipts}
-Total Revenue: {currency}{total_revenue:,.2f}
+Summary:
+- Total Receipts: {total_receipts}
+- Total Revenue: {currency}{total_revenue:,.2f}
+
+---
+This is an automated message from BKK Print Service
         """
 
+        # HTML
         html_content = f"""
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }}
+        .header {{
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }}
+        .content {{
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }}
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }}
+        .stat-card {{
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }}
+        .stat-value {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }}
+        .stat-label {{
+            color: #666;
+            font-size: 14px;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }}
+    </style>
+</head>
 <body>
-<h2>📊 Daily Summary</h2>
-<p><strong>Date:</strong> {date_str} ({day_name})</p>
-<ul>
-    <li>Total Receipts: {total_receipts}</li>
-    <li>Total Revenue: {currency}{total_revenue:,.2f}</li>
-    <li>Avg / Receipt: {currency}{(total_revenue / total_receipts if total_receipts else 0):,.2f}</li>
-</ul>
-</body>
-</html>
-        """
-
-        return self.send_email(to_emails, subject, html_content, text_content)
-
-    def send_daily_summary(self, to_emails, date, summary_data, currency):
-        """
-        Send daily summary email with receipt statistics
-        """
-        date_str = date.strftime('%B %d, %Y')
-        day_name = date.strftime('%A')
-
-        subject = f"📊 Daily Summary - {date_str}"
-
-        total_receipts = summary_data.get('total_receipts', 0)
-        total_revenue = summary_data.get('total_revenue', 0)
-
-        # ---------- Plain Text ----------
-        text_content = f"""
-    Daily Summary Report
-
-    Date: {date_str} ({day_name})
-
-    Summary:
-    - Total Receipts: {total_receipts}
-    - Total Revenue: {currency}{total_revenue:,.2f}
-
-    ---
-    This is an automated message from BKK Print Service
-        """
-
-        # ---------- HTML ----------
-        html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-            }}
-            .container {{
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .header {{
-                background-color: #4CAF50;
-                color: white;
-                padding: 20px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-            }}
-            .content {{
-                background-color: white;
-                padding: 30px;
-                border-radius: 0 0 5px 5px;
-            }}
-            .stats-grid {{
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-                margin: 20px 0;
-            }}
-            .stat-card {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                border-radius: 5px;
-                text-align: center;
-            }}
-            .stat-value {{
-                font-size: 24px;
-                font-weight: bold;
-                color: #4CAF50;
-                margin: 10px 0;
-            }}
-            .stat-label {{
-                color: #666;
-                font-size: 14px;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                color: #666;
-                font-size: 12px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h2>📊 Daily Summary Report</h2>
-                <p>{date_str} ({day_name})</p>
-            </div>
-            <div class="content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Receipts</div>
-                        <div class="stat-value">{total_receipts}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Total Revenue</div>
-                        <div class="stat-value">{currency}{total_revenue:,.2f}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Avg per Receipt</div>
-                        <div class="stat-value">
-                            {currency}{(total_revenue / total_receipts if total_receipts else 0):,.2f}
-                        </div>
+    <div class="container">
+        <div class="header">
+            <h2>📊 Daily Summary Report</h2>
+            <p>{date_str} ({day_name})</p>
+        </div>
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Receipts</div>
+                    <div class="stat-value">{total_receipts}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">{currency}{total_revenue:,.2f}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg per Receipt</div>
+                    <div class="stat-value">
+                        {currency}{(total_revenue / total_receipts if total_receipts else 0):,.2f}
                     </div>
                 </div>
             </div>
-            <div class="footer">
-                <p>
-                    This is an automated message from BKK Print Service.<br>
-                    Please do not reply to this email.
-                </p>
-            </div>
         </div>
-    </body>
-    </html>
+        <div class="footer">
+            <p>
+                This is an automated message from BKK Print Service.<br>
+                Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
         """
 
         return self.send_email(to_emails, subject, html_content, text_content)
