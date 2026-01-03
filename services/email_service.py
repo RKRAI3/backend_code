@@ -3,7 +3,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 from email.utils import formataddr
-from email.policy import SMTPUTF8  # ✅ Add this import
 from datetime import datetime
 import os
 from environment import (
@@ -40,18 +39,16 @@ class EmailService:
         try:
             msg = MIMEMultipart('alternative')
             
-            # Clean headers
+            # Clean headers - be more aggressive
             subject = self._clean_header(subject)
             from_name = self._clean_header(self.from_name)
             from_email = self._clean_header(self.from_email)
             to_emails = [self._clean_header(e) for e in to_emails]
 
-            # UTF-8 safe headers
-            msg['Subject'] = Header(subject, 'utf-8')
-            msg['From'] = formataddr((
-                str(Header(from_name, 'utf-8')),
-                from_email
-            ))
+            # UTF-8 safe headers - simplified approach
+            msg['Subject'] = str(Header(subject, 'utf-8'))
+            # Use simple string formatting instead of formataddr
+            msg['From'] = f"{from_name} <{from_email}>"
             msg['To'] = ', '.join(to_emails)
             
             print("SUBJECT is", msg['Subject'])
@@ -62,27 +59,25 @@ class EmailService:
             if text_content:
                 text_content = text_content.replace('\xa0', ' ')
                 msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
-                print("Text content", text_content)
+                print("Text content", text_content[:100])
             
             html_content = html_content.replace('\xa0', ' ')
             msg.attach(MIMEText(html_content, 'html', 'utf-8'))
-            print("HTML CONTENT", html_content)
+            print("HTML CONTENT", html_content[:100])
             
-            # Send email with UTF-8 support
+            # Send email using send_message (simplest approach)
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_username, self.smtp_password)
-                server.sendmail(
-                    from_email,
-                    to_emails,
-                    msg.as_bytes(policy=SMTPUTF8)  # ✅ Now this will work
-                )
+                server.send_message(msg)
             
             print("✅ Email sent successfully")
             return True, None
 
         except Exception as e:
             print("❌ Email send failed:", str(e))
+            import traceback
+            traceback.print_exc()
             return False, str(e)
 
     def send_no_receipts_alert(self, to_emails, date):
