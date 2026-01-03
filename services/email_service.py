@@ -17,12 +17,28 @@ class EmailService:
     def __init__(self):
         self.smtp_server = SMTP_SERVER
         self.smtp_port = int(SMTP_PORT)
-        self.smtp_username = SMTP_USERNAME
-        self.smtp_password = SMTP_PASSWORD
-        self.from_email = FROM_EMAIL
-        self.from_name = FROM_NAME
-        print("Config Data", SMTP_SERVER, int(SMTP_PORT), SMTP_USERNAME, 
-              SMTP_PASSWORD, FROM_EMAIL, FROM_NAME)
+        
+        # Clean credentials - remove non-breaking spaces and other special chars
+        def clean_string(s):
+            if s is None:
+                return ''
+            return str(s).replace('\xa0', '').replace('\u200b', '').replace(' ', '').strip()
+        
+        self.smtp_username = clean_string(SMTP_USERNAME)
+        self.smtp_password = clean_string(SMTP_PASSWORD)
+        self.from_email = clean_string(FROM_EMAIL)
+        self.from_name = str(FROM_NAME).replace('\xa0', ' ').replace('\u200b', '').strip() if FROM_NAME else ''
+        
+        print("Config loaded:")
+        print(f"  Server: {SMTP_SERVER}:{int(SMTP_PORT)}")
+        print(f"  Username: {self.smtp_username}")
+        print(f"  Password length: {len(self.smtp_password)}")
+        print(f"  From: {self.from_name} <{self.from_email}>")
+        
+        # Debug: Check for problematic characters
+        if any(ord(c) > 127 for c in self.smtp_password):
+            print("⚠️  WARNING: Password contains non-ASCII characters!")
+            print(f"  Password bytes: {self.smtp_password.encode('utf-8')}")
     
     def _clean_header(self, value: str) -> str:
         """Clean header values of problematic characters"""
