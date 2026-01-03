@@ -14,7 +14,8 @@ def transform_receipt_data(original_data):
         'rcpnt_nm': original_data.get('recipient_name'),
         'rcpnt_mob': original_data.get('recipient_number'),
         'tot_incl_tax': original_data.get('gross_amount'),
-        'recpt_dt': original_data.get('created_at', '').split('T')[0],  # Remove time portion
+        # 'recpt_dt': original_data.get('created_at', '').split('T')[0],  # Remove time portion
+        'recpt_dt': original_data.get('created_at', ''),
         'pmnt_mode': original_data.get('payment_mode', 'CASH'),
         'trnsaction_nmbr': original_data.get('transaction_number'),
         'package_nm': original_data.get('package'),
@@ -48,7 +49,8 @@ def transform_pre_generated_receipts_list(receipts):
         'rcpnt_nm': rcpt.to_dict().get('recipient_name'),
         'rcpnt_mob': rcpt.to_dict().get('recipient_number'),
         'tot_incl_tax': rcpt.to_dict().get('gross_amount'),
-        'recpt_dt': rcpt.to_dict().get('created_at', '').split('T')[0],
+        # 'recpt_dt': rcpt.to_dict().get('created_at', '').split('T')[0],
+        'recpt_dt': rcpt.to_dict().get('created_at', ''),
         'pmnt_mode': rcpt.to_dict().get('payment_mode', 'CASH'),
         'trnsaction_nmbr': rcpt.to_dict().get('transaction_number'),
         } for rcpt in receipts.items]
