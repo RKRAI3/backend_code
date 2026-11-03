@@ -12,14 +12,18 @@ class Receipt(db.Model):
     recipient_name = db.Column(db.String(50), nullable=False)
     recipient_number = db.Column(db.String(20), nullable=True)
     package = db.Column(db.String(36), nullable=False, default='Standard')
-    package_amt = db.Column(db.Numeric(12, 2), nullable=False, default=0)
-    total_std_amount = db.Column(db.Numeric(12, 2), nullable=False)
-    total_vend_amount = db.Column(db.Numeric(12, 2), nullable=False)
-    tax_amount = db.Column(db.Numeric(12, 2), nullable=False, default=0)
-    gross_amount = db.Column(db.Numeric(12, 2), nullable=False)
+    package_amt = db.Column(db.Numeric(14, 3), nullable=False, default=0)
+    total_std_amount = db.Column(db.Numeric(14, 3), nullable=False)
+    total_vend_amount = db.Column(db.Numeric(14, 3), nullable=False)
+    tax_amount = db.Column(db.Numeric(14, 3), nullable=False, default=0)
+    gross_amount = db.Column(db.Numeric(14, 3), nullable=False)
     payment_mode = db.Column(db.String(20), nullable=False)
     transaction_number = db.Column(db.String(50), nullable=True)
     created_by = db.Column(db.String(36),db.ForeignKey('users.user_id'), nullable=False)
+    country_id = db.Column(db.String(36), db.ForeignKey('countries.country_id'), nullable=False, index=True)
+    # Snapshot of the country config at the time of issue, so later config edits don't alter old receipts
+    currency_code = db.Column(db.String(3), nullable=True)
+    tax_rate = db.Column(db.Numeric(6, 4), nullable=True)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -27,8 +31,8 @@ class Receipt(db.Model):
     # Relationships
     receipt_items = db.relationship('ReceiptItem', backref='receipt', lazy=True, cascade='all, delete-orphan')
     
-    def __init__(self,package, package_amt, total_std_amount, total_vend_amount, tax_amount,gross_amount, created_by,recipient_number,recipient_name, payment_mode, transaction_number,):
-        self.receipt_number = self.generate_receipt_number()
+    def __init__(self,package, package_amt, total_std_amount, total_vend_amount, tax_amount,gross_amount, created_by,recipient_number,recipient_name, payment_mode, transaction_number, country_id, currency_code, tax_rate, receipt_prefix='IN'):
+        self.receipt_number = self.generate_receipt_number(receipt_prefix)
         self.package = package
         self.package_amt = package_amt
         self.total_std_amount = total_std_amount
@@ -40,17 +44,12 @@ class Receipt(db.Model):
         self.recipient_name = recipient_name
         self.payment_mode = payment_mode
         self.transaction_number = transaction_number
-    
-    @validates('package')
-    def on_active_change(self, key, value):
-        if value and value.lower is "Full Package":
-            self.total_std_amount = 0
-            self.total_vend_amount = 0
-        return value
-        
-    
-    def generate_receipt_number(self):
-        return f"IN-{datetime.now().strftime('%d%m%Y')}-{str(uuid.uuid4())[:8].upper()}"
+        self.country_id = country_id
+        self.currency_code = currency_code
+        self.tax_rate = tax_rate
+
+    def generate_receipt_number(self, prefix='IN'):
+        return f"{prefix}-{datetime.now().strftime('%d%m%Y')}-{str(uuid.uuid4())[:8].upper()}"
     # def generate_receipt_number(self):
     #     return f"REC-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
 
@@ -74,6 +73,9 @@ class Receipt(db.Model):
             'gross_amount': float(self.gross_amount),
             'payment_mode': self.payment_mode,
             'transaction_number': self.transaction_number,
+            'country_id': self.country_id,
+            'currency_code': self.currency_code,
+            'currency_symbol': self.country.currency_symbol if self.country else None,
             'created_by': self.created_by,
             'created_at': self.created_at.strftime('%d-%m-%Y %H:%M:%S') if self.created_at else None,
             'updated_at': self.updated_at.strftime('%d-%m-%Y') if self.updated_at else None,

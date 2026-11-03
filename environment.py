@@ -10,6 +10,9 @@ JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'NOT_FOUND_SECRET_KEY')
 ADMIN_NAME = os.getenv('ADMIN_NAME', None)
 ADMIN_ID = os.getenv('ADMIN_ID', None)
 PASSWORD = os.getenv('PASSWORD', None)
+# Tax rate and currency are now configured per country (countries table).
+# TAX_RATE / CURRENCY are only read by scripts/migrate_multi_country.py as defaults
+# for the country that existing data is assigned to.
 TAX_RATE = os.getenv('TAX_RATE', None)
 TOKEN_EXPIRY = os.getenv('TOKEN_EXPIRY', 10)  # Default to 1 hour if not set
 
@@ -20,6 +23,5 @@ SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 FROM_EMAIL = os.getenv('FROM_EMAIL')
 FROM_NAME = os.getenv('FROM_NAME', 'BKK Print Service')
 
-# Currency
+# Currency (migration default only, see above)
 CURRENCY = os.getenv("CURRENCY","฿")
-# CURRENCY = os.getenv("CURRENCY","₩")

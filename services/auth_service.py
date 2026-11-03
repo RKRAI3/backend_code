@@ -17,6 +17,8 @@ class AuthService:
         additional_claims = {
             'user_id': user.user_id,
             'is_admin': user.is_admin,
+            'role': user.role,
+            'country_id': user.country_id,
             'email': user.email
         }
         
@@ -44,11 +46,13 @@ class AuthService:
         additional_claims = {
             'user_id': user.user_id,
             'is_admin': user.is_admin,
+            'role': user.role,
+            'country_id': user.country_id,
             'email': user.email
         }
         
         new_access_token = create_access_token(
-            identity=user.user_id,
+            identity=str(user.user_id),
             additional_claims=additional_claims
         )
         

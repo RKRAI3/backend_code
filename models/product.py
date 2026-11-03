@@ -9,7 +9,8 @@ class Product(db.Model):
     # prod_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     prod_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     name = db.Column(db.String(200), nullable=False)
-    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    unit_price = db.Column(db.Numeric(12, 3), nullable=False)
+    country_id = db.Column(db.String(36), db.ForeignKey('countries.country_id'), nullable=False, index=True)
     created_by = db.Column(db.String(36), db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
@@ -29,6 +30,7 @@ class Product(db.Model):
             'prod_id': self.prod_id,
             'service': self.name,
             'unit_price': float(self.unit_price),
+            'country_id': self.country_id,
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None

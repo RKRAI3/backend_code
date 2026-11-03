@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 from services.dashboard_services import DashboardService
+from utils.decorators import country_scope
+from models.country import Country
 from utils.utility import transform_dashboard_data
 from datetime import datetime, timedelta
 # import logging
@@ -8,8 +9,8 @@ from datetime import datetime, timedelta
 dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/today_receipts', methods=['GET'])
-@jwt_required()
-def get_today_receipts_dashboard():
+@country_scope(required=True)
+def get_today_receipts_dashboard(country_id):
     """Get receipt dashboard with day-wise grouping and filtering"""
     try:
         start_date = datetime.now().strftime('%Y-%m-%d')
@@ -18,6 +19,7 @@ def get_today_receipts_dashboard():
         receipts_data, error = DashboardService.get_all_receipts_dashboard(
         start_date=start_date,
         end_date=end_date,
+        country_id=country_id,
         )
         if error:
             return jsonify({
@@ -47,8 +49,8 @@ def get_today_receipts_dashboard():
         }), 500
 
 @dashboard_bp.route('/all_receipts', methods=['GET'])
-@jwt_required()
-def get_receipts_dashboard():
+@country_scope(required=True)
+def get_receipts_dashboard(country_id):
     """Get receipt dashboard with day-wise grouping and filtering"""
     try:
         # Get query parameters
@@ -74,6 +76,7 @@ def get_receipts_dashboard():
         result, error = DashboardService.get_receipts_dashboard(
             start_date=start_date,
             end_date=end_date,
+            country_id=country_id,
             # page=page,
             # per_page=per_page
         )
@@ -106,17 +109,15 @@ def get_receipts_dashboard():
         }), 500
 
 @dashboard_bp.route('/dashboard-data', methods=['GET'])
-def get_dashboard_data():
+@country_scope(required=True)
+def get_dashboard_data(country_id):
     # Get the period parameter
     start_date = None
     end_date = None
     period = request.args.get('period', 'all')
-    api_base_url = request.url_root.rstrip('/')
-    currency = "₿"
-    package = "Full Package"
-    if "app1" in api_base_url:
-        package = "Customer Convenience Package"
-        currency = "₩"
+    country = Country.query.get(country_id)
+    currency = country.currency_symbol
+    package = country.package_name
     if period == 'today':
         # start_date = datetime.now().strftime('%Y-%m-%d')
         # end_date = start_date
@@ -144,9 +145,9 @@ def get_dashboard_data():
         end_date=end_date,
         period=period,
         package = package,
-        currency = currency
-    )  
+        currency = currency,
+        country_id = country_id
+    )
     # Convert back to the expected format for frontend
-    print(f"Dashboard data response: {response}")
     return response
     

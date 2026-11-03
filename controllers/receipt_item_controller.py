@@ -1,11 +1,24 @@
+from functools import wraps
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 from services.receipt_item_service import ReceiptItemService
+from services.receipt_service import ReceiptService
+from utils.decorators import country_scope
 
 receipt_item_bp = Blueprint('receipt_items', __name__)
 
+
+def receipt_in_scope(f):
+    """404 unless the receipt belongs to the caller's country"""
+    @wraps(f)
+    @country_scope()
+    def decorated_function(receipt_id, country_id):
+        if not ReceiptService.get_receipt_by_id(receipt_id, country_id):
+            return jsonify({'message': 'Receipt not found'}), 404
+        return f(receipt_id)
+    return decorated_function
+
 @receipt_item_bp.route('/receipt/<string:receipt_id>/items', methods=['GET'])
-@jwt_required()
+@receipt_in_scope
 def get_receipt_items_simple(receipt_id):
     """Get simple list of receipt items"""
     try:
@@ -29,7 +42,7 @@ def get_receipt_items_simple(receipt_id):
         return jsonify({'message': f'Failed to retrieve receipt items: {str(e)}'}), 500
 
 @receipt_item_bp.route('/receipt/<string:receipt_id>/items/detailed', methods=['GET'])
-@jwt_required()
+@receipt_in_scope
 def get_receipt_items_detailed(receipt_id):
     """Get receipt items with complete product information"""
     try:
@@ -68,7 +81,7 @@ def get_receipt_items_detailed(receipt_id):
         return jsonify({'message': f'Failed to retrieve detailed receipt items: {str(e)}'}), 500
 
 @receipt_item_bp.route('/receipt/<string:receipt_id>/items/statistics', methods=['GET'])
-@jwt_required()
+@receipt_in_scope
 def get_receipt_items_statistics(receipt_id):
     """Get statistical information about receipt items"""
     try:
@@ -89,7 +102,7 @@ def get_receipt_items_statistics(receipt_id):
         return jsonify({'message': f'Failed to retrieve receipt statistics: {str(e)}'}), 500
 
 @receipt_item_bp.route('/receipt/<string:receipt_id>/items/breakdown', methods=['GET'])
-@jwt_required()
+@receipt_in_scope
 def get_receipt_items_breakdown(receipt_id):
     """Get detailed product breakdown for receipt items"""
     try:

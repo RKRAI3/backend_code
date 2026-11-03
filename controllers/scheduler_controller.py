@@ -1,14 +1,13 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
-from utils.decorators import admin_required
+from utils.decorators import country_scope
+from models.user import SUPER_ADMIN
 import app
 
 scheduler_bp = Blueprint('scheduler', __name__)
 
 @scheduler_bp.route('/trigger-check', methods=['POST'])
-@jwt_required()
-@admin_required
-def trigger_check():
+@country_scope(roles=[SUPER_ADMIN])
+def trigger_check(country_id):
     """Manually trigger the daily receipt check (Admin only)"""
     try:
         if app.scheduler_service:
@@ -30,9 +29,8 @@ def trigger_check():
         }), 500
 
 @scheduler_bp.route('/status', methods=['GET'])
-@jwt_required()
-@admin_required
-def get_status():
+@country_scope(roles=[SUPER_ADMIN])
+def get_status(country_id):
     """Get scheduler status (Admin only)"""
     try:
         if app.scheduler_service:

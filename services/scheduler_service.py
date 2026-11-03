@@ -2,9 +2,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 from models.receipt import Receipt
+from models.country import Country
 from services.email_service import EmailService
 from app import db
-from environment import CURRENCY
 import os
 
 
@@ -43,7 +43,7 @@ class SchedulerService:
         )
 
     def check_daily_receipts(self):
-        """Check if receipts were generated today and send alert if none found"""
+        """Check every active country for receipts on the previous working day and alert"""
         try:
             if not self.app:
                 print("❌ App context not available")
@@ -68,66 +68,70 @@ class SchedulerService:
 
                 print("📅 Report generated for:", today.date())
 
-                start_of_day = today.replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                )
-                end_of_day = today.replace(
-                    hour=23, minute=59, second=59, microsecond=999999
-                )
-
-                receipts = Receipt.query.filter(
-                    Receipt.deleted_at.is_(None),
-                    Receipt.created_at >= start_of_day,
-                    Receipt.created_at <= end_of_day
-                ).all()
-
-                if not receipts:
-                    print(
-                        f"No receipts found for {today.strftime('%Y-%m-%d')}"
-                    )
-
-                    if self.alert_recipients:
-                        print("Sending no-receipts alert email...")
-                        success, error = (
-                            self.email_service.send_no_receipts_alert(
-                                self.alert_recipients,
-                                today
-                            )
-                        )
-
-                        if success:
-                            print(
-                                f"Alert sent successfully to "
-                                f"{len(self.alert_recipients)} recipients"
-                            )
-                        else:
-                            print("❌ Failed to send alert:", error)
-                    else:
-                        print("⚠️ No alert recipients configured")
-                else:
-                    print(
-                        f"Found {len(receipts)} receipts for "
-                        f"{today.strftime('%Y-%m-%d')}"
-                    )
-
-                    if self.always_send_summary and self.alert_recipients:
-                        summary_data = self._calculate_summary(receipts)
-                        success, error = (
-                            self.email_service.send_daily_summary(
-                                self.alert_recipients,
-                                today,
-                                summary_data,
-                                CURRENCY
-                            )
-                        )
-
-                        if success:
-                            print("✅ Daily summary sent successfully")
-                        else:
-                            print("❌ Failed to send summary:", error)
+                for country in Country.query.filter_by(is_active=True).all():
+                    self._check_country(country, today)
 
         except Exception as e:
             print("❌ Error in check_daily_receipts:", str(e))
+
+    def _check_country(self, country, day):
+        """Run the daily check for a single country"""
+        # Country-specific recipients, falling back to ALERT_EMAIL_RECIPIENTS
+        recipients = country.alert_email_list() or self.alert_recipients
+        if not recipients:
+            print(f"⚠️ No alert recipients configured for {country.name}")
+            return
+
+        start_of_day = day.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        end_of_day = day.replace(
+            hour=23, minute=59, second=59, microsecond=999999
+        )
+
+        receipts = Receipt.query.filter(
+            Receipt.deleted_at.is_(None),
+            Receipt.country_id == country.country_id,
+            Receipt.created_at >= start_of_day,
+            Receipt.created_at <= end_of_day
+        ).all()
+
+        if not receipts:
+            print(
+                f"No receipts found for {country.name} on {day.strftime('%Y-%m-%d')}"
+            )
+            success, error = self.email_service.send_no_receipts_alert(
+                recipients,
+                day,
+                business_name=country.business_name,
+                country_name=country.name
+            )
+            if success:
+                print(f"Alert sent successfully to {len(recipients)} recipients")
+            else:
+                print("❌ Failed to send alert:", error)
+        else:
+            print(
+                f"Found {len(receipts)} receipts for {country.name} on "
+                f"{day.strftime('%Y-%m-%d')}"
+            )
+
+            if self.always_send_summary:
+                summary_data = self._calculate_summary(receipts)
+                success, error = self.email_service.send_daily_summary(
+                    recipients,
+                    day,
+                    summary_data,
+                    country.currency_symbol,
+                    business_name=country.business_name,
+                    country_name=country.name,
+                    decimals=country.currency_decimals
+                )
+
+                if success:
+                    print("✅ Daily summary sent successfully")
+                else:
+                    print("❌ Failed to send summary:", error)
 
     def _calculate_summary(self, receipts):
         """Calculate summary statistics from receipts"""
@@ -142,14 +146,7 @@ class SchedulerService:
         }
 
     def start(self):
-        """Start the scheduler"""
-        if not self.alert_recipients:
-            print(
-                "⚠️ No email recipients configured. "
-                "Scheduler will not send alerts."
-            )
-            return
-
+        """Start the scheduler. Recipients are resolved per country at run time."""
         self.scheduler.add_job(
             func=self.check_daily_receipts,
             trigger=CronTrigger(

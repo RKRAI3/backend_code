@@ -1,3 +1,4 @@
+from .country import Country
 from .user import User
 from .product import Product
 from .receipt import Receipt
