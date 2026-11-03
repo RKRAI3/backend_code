@@ -7,3 +7,9 @@ pydantic==2.11.7
 python-dotenv==1.1.1
 SQLAlchemy
 APScheduler==3.10.4
+
+pk_live_DY20wTo_WhlXhfOSN0MFNX_wPmOHfEDjVsTQWHMZu8Q
+
+Xquizit
+pk_live_Zzi8muUijTCcCOw9pQ8whmIB0vvEzAtFxPCfuSymt9o
+

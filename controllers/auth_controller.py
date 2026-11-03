@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.auth_service import AuthService
 from services.user_service import UserService
-from validators.schemas import LoginSchema, UserCreateSchema
+from validators.schemas import LoginSchema
 from utils.decorators import validate_json
 from pydantic import ValidationError
 
@@ -15,10 +15,11 @@ def login(validated_data):
     try:
         email = validated_data['email']
         password = validated_data['password']
-        print(f"Attempting login for email: {email} and password: {password}")
         user = AuthService.authenticate_user(email, password)
         if not user:
             return jsonify({'message': 'Invalid email or password'}), 401
+        if not user.is_super_admin and (not user.country or not user.country.is_active):
+            return jsonify({'message': 'Your account is not assigned to an active country'}), 403
         
         tokens = AuthService.generate_tokens(user)
         
@@ -31,22 +32,10 @@ def login(validated_data):
         return jsonify({'message': f'Login failed: {str(e)}'}), 500
 
 @auth_bp.route('/register', methods=['POST'])
-@validate_json(UserCreateSchema)
-def register(validated_data):
-    """User registration endpoint"""
-    try:
-        user, error = UserService.create_user(validated_data)
-        if error:
-            return jsonify({'message': error}), 400
-        
-        tokens = AuthService.generate_tokens(user)
-        return jsonify({
-            'message': 'Registration successful',
-            'data': tokens
-        }), 201
-        
-    except Exception as e:
-        return jsonify({'message': f'Registration failed: {str(e)}'}), 500
+def register():
+    """Self-registration is disabled: every account must belong to a country, so users
+    are created by an admin through /api/users/createuser."""
+    return jsonify({'message': 'Self-registration is disabled. Ask your administrator to create an account.'}), 403
 
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)

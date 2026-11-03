@@ -7,9 +7,13 @@ Created on Thu Jul 24 16:26:40 2025
 from datetime import datetime, timedelta
 
 
-def transform_receipt_data(original_data):
+def transform_receipt_data(original_data, country):
     # Extract and transform the data
     new_data = {
+        'currency_code': original_data.get('currency_code') or country.currency_code,
+        'currency_symbol': country.currency_symbol,
+        'currency_decimals': country.currency_decimals,
+        'business_name': country.business_name,
         'recpt_nmbr': original_data.get('receipt_number'),
         'rcpnt_nm': original_data.get('recipient_name'),
         'rcpnt_mob': original_data.get('recipient_number'),
@@ -24,8 +28,7 @@ def transform_receipt_data(original_data):
 
     # Process each item in the items list
     for item in original_data.get('items', []):
-        print("Items Details", item)
-        if original_data['package']=="Full Package":
+        if country.package_name and original_data['package'] == country.package_name:
             transformed_item = {'service': item.get('product_name'),
                                 'per_unt':0,
                                 'nos_unt': item.get('quantity'),

@@ -7,7 +7,7 @@ from flask import jsonify
 
 from openpyxl.utils import get_column_letter
 
-def add_quantity_and_revenue_sheets(wb, dashboard_data, currency='₿'):
+def add_quantity_and_revenue_sheets(wb, dashboard_data, currency):
     quantity_report = dashboard_data.get("quantity_report", [])
     revenue_report = dashboard_data.get("revenue_report", [])
 
@@ -139,7 +139,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
     
     # Format currency cells '₿#,##0'
     for r in [8, 9]:
-        ws_summary[f'B{r}'].number_format = f'{currency}#,##0'
+        ws_summary[f'B{r}'].number_format = f'"{currency}"#,##0'
     
     ws_summary.column_dimensions['A'].width = 25
     ws_summary.column_dimensions['B'].width = 20
@@ -171,7 +171,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
                 cell.alignment = right_align
         
         # Format numbers
-        ws_product.cell(row=row_idx, column=3).number_format = f'{currency}#,##0'
+        ws_product.cell(row=row_idx, column=3).number_format = f'"{currency}"#,##0'
     
     # Totals row
     total_row = len(product_revenue) + 2
@@ -187,7 +187,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
         if col_idx > 1:
             cell.alignment = right_align
     
-    ws_product.cell(row=total_row, column=3).number_format = f'{currency}#,##0'
+    ws_product.cell(row=total_row, column=3).number_format = f'"{currency}"#,##0'
     
     ws_product.column_dimensions['A'].width = 28
     ws_product.column_dimensions['B'].width = 15
@@ -228,7 +228,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
         
         # Format currency
         for col in [2, 3, 4]:
-            ws_price.cell(row=row_idx, column=col).number_format = '₿#,##0.00'
+            ws_price.cell(row=row_idx, column=col).number_format = f'"{currency}"#,##0.00'
         ws_price.cell(row=row_idx, column=5).number_format = '0.00"%"'
         
         # Color code based on variance
@@ -343,7 +343,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
                 rev_cell.value = services[service]['revenue']
                 rev_cell.alignment = right_align
                 rev_cell.border = border
-                rev_cell.number_format = f'{currency}#,##0'
+                rev_cell.number_format = f'"{currency}"#,##0'
             else:
                 ws_sales.cell(row=row, column=col_idx).border = border
                 ws_sales.cell(row=row, column=col_idx+1).border = border
@@ -357,7 +357,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
         total_cell.value = f'={total_formula}'
         total_cell.alignment = right_align
         total_cell.border = border
-        total_cell.number_format = f'{currency}#,##0'
+        total_cell.number_format = f'"{currency}"#,##0'
         total_cell.fill = PatternFill(start_color="FFE5CC", end_color="FFE5CC", fill_type="solid")
         
         row += 1
@@ -387,7 +387,7 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
         rev_cell.font = subheader_font
         rev_cell.alignment = right_align
         rev_cell.border = border
-        rev_cell.number_format = f'{currency}#,##0'
+        rev_cell.number_format = f'"{currency}"#,##0'
         
         col_idx += 2
     
@@ -398,14 +398,14 @@ def generate_comprehensive_excel_report(dashboard_data, currency):
     grand_total_cell.font = Font(bold=True, color="FFFFFF", size=10)
     grand_total_cell.alignment = right_align
     grand_total_cell.border = border
-    grand_total_cell.number_format = f'{currency}#,##0'
+    grand_total_cell.number_format = f'"{currency}"#,##0'
     
     # Adjust column widths
     ws_sales.column_dimensions['A'].width = 15
     for i in range(2, total_col + 1):
         ws_sales.column_dimensions[openpyxl.utils.get_column_letter(i)].width = 14
     
-    add_quantity_and_revenue_sheets(wb, dashboard_data, currency='₿')
+    add_quantity_and_revenue_sheets(wb, dashboard_data, currency=currency)
     
     # Save to BytesIO
     excel_buffer = BytesIO()

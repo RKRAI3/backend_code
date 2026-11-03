@@ -1,19 +1,21 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify, g
 from services.product_service import ProductService
 from validators.schemas import ProductCreateSchema, ProductUpdateSchema
-from utils.decorators import validate_json
+from utils.decorators import country_scope, validate_json
+from models.user import SUPER_ADMIN, COUNTRY_ADMIN
+
+ADMIN_ROLES = [SUPER_ADMIN, COUNTRY_ADMIN]
 
 product_bp = Blueprint('products', __name__)
 
 @product_bp.route('/all_product', methods=['GET'])
-@jwt_required()
-def get_products():
-    """Get all products with pagination"""
+@country_scope()
+def get_products(country_id):
+    """Get all products of the user's country with pagination"""
     try:
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
-        products_paginated = ProductService.get_all_products(page, per_page)
+        products_paginated = ProductService.get_all_products(page, per_page, country_id)
         products = [product.to_dict() for product in products_paginated.items]
         fields_to_remove = ["updated_at", "created_at", "created_by"]
         # Process each item
@@ -47,13 +49,12 @@ def get_products():
         return jsonify({'message': f'Failed to retrieve products: {str(e)}'}), 500
 
 @product_bp.route('/', methods=['POST'])
-@jwt_required()
+@country_scope(required=True, roles=ADMIN_ROLES)
 @validate_json(ProductCreateSchema)
-def create_product(validated_data):
-    """Create a new product"""
+def create_product(validated_data, country_id):
+    """Create a new product for the admin's country (super admin passes country_id)"""
     try:
-        current_user_id = get_jwt_identity()
-        product, error = ProductService.create_product(validated_data, current_user_id)
+        product, error = ProductService.create_product(validated_data, g.current_user.user_id, country_id)
         
         if error:
             return jsonify({'message': error}), 400
@@ -67,11 +68,11 @@ def create_product(validated_data):
         return jsonify({'message': f'Failed to create product: {str(e)}'}), 500
 
 @product_bp.route('/<string:prod_id>', methods=['GET'])
-@jwt_required()
-def get_product(prod_id):
+@country_scope()
+def get_product(prod_id, country_id):
     """Get product by ID"""
     try:
-        product = ProductService.get_product_by_id(prod_id)
+        product = ProductService.get_product_by_id(prod_id, country_id)
         if not product:
             return jsonify({'message': 'Product not found'}), 404
         
@@ -84,12 +85,12 @@ def get_product(prod_id):
         return jsonify({'message': f'Failed to retrieve product: {str(e)}'}), 500
 
 @product_bp.route('/<string:prod_id>', methods=['PUT'])
-@jwt_required()
+@country_scope(roles=ADMIN_ROLES)
 @validate_json(ProductUpdateSchema)
-def update_product(validated_data, prod_id):
+def update_product(validated_data, prod_id, country_id):
     """Update product information"""
     try:
-        product, error = ProductService.update_product(prod_id, validated_data)
+        product, error = ProductService.update_product(prod_id, validated_data, country_id)
         if error:
             return jsonify({'message': error}), 400
         
@@ -102,11 +103,11 @@ def update_product(validated_data, prod_id):
         return jsonify({'message': f'Failed to update product: {str(e)}'}), 500
 
 @product_bp.route('/<string:prod_id>', methods=['DELETE'])
-@jwt_required()
-def delete_product(prod_id):
+@country_scope(roles=ADMIN_ROLES)
+def delete_product(prod_id, country_id):
     """Delete product"""
     try:
-        success, error = ProductService.delete_product(prod_id)
+        success, error = ProductService.delete_product(prod_id, country_id)
         
         if error:
             return jsonify({'message': error}), 404 if 'not found' in error else 400

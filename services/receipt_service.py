@@ -1,25 +1,32 @@
 from models.receipt import Receipt
 from models.receipt_item import ReceiptItem
 from models.product import Product
+from models.country import Country
 from app import db
 from decimal import Decimal
-from environment import TAX_RATE
-
 
 
 class ReceiptService:
-    TAX_RATE = Decimal(TAX_RATE)
     @staticmethod
-    def create_receipt(receipt_data, created_by_id,):
-        """Create a new receipt with items"""
+    def _query(country_id=None):
+        query = Receipt.query.filter_by(deleted_at=None)
+        if country_id:
+            query = query.filter_by(country_id=country_id)
+        return query
+
+    @staticmethod
+    def create_receipt(receipt_data, created_by_id, country_id):
+        """Create a new receipt with items, using the country's tax rate and package"""
         try:
+            country = Country.query.get(country_id)
             items_data = receipt_data['items']
-            # tax_rate = receipt_data.get('tax_rate', 0)                
-            tax_rate = TAX_RATE
+            tax_rate = country.tax_rate
             recipient_name = receipt_data['recipient_name']
             recipient_number = receipt_data.get('recipient_number', None)
             package = receipt_data.get("package","Standard")
             package_amt = receipt_data.get("package_amt", 0)
+            if country.package_name and package == country.package_name and country.package_price is not None:
+                package_amt = country.package_price  # server-side price; don't trust the client's amount
             payment_mode = receipt_data.get('payment_mode', 'CASH')
             transaction_number = receipt_data.get('transaction_number', None)
             # Validate products exist and calculate amounts
@@ -28,7 +35,8 @@ class ReceiptService:
             receipt_items = []
             for item_data in items_data:
                 product = Product.query.filter_by(
-                    prod_id=str(item_data['prod_id']), 
+                    prod_id=str(item_data['prod_id']),
+                    country_id=country_id,
                     deleted_at=None
                 ).first()
                 if not product:
@@ -60,12 +68,13 @@ class ReceiptService:
                         "sub_tot_std_prc": 0
                     })
 
-            tax_amount = sub_tot_vend_prc * Decimal(str(tax_rate))
+            tax_amount = country.quantize(sub_tot_vend_prc * Decimal(str(tax_rate)))
             total_amount = sub_tot_vend_prc + tax_amount
-            if receipt_data["package"]=='Full Package':
-                tax_amount = receipt_data["package_amt"] * Decimal(str(tax_rate))
-                total_amount = receipt_data["package_amt"]
-                
+            if country.package_name and package == country.package_name:
+                tax_amount = country.quantize(package_amt * Decimal(str(tax_rate)))
+                total_amount = package_amt
+            total_amount = country.quantize(total_amount)
+
             # Create receipt
             receipt = Receipt(
                 recipient_name=recipient_name,
@@ -78,7 +87,11 @@ class ReceiptService:
                 gross_amount=total_amount,
                 payment_mode=payment_mode,
                 transaction_number=transaction_number,
-                created_by=created_by_id
+                created_by=created_by_id,
+                country_id=country_id,
+                currency_code=country.currency_code,
+                tax_rate=tax_rate,
+                receipt_prefix=country.receipt_prefix
             )
             
             db.session.add(receipt)
@@ -104,21 +117,21 @@ class ReceiptService:
             return None, str(e)
     
     @staticmethod
-    def get_all_receipts(current_user_id, page=1, per_page=10):
+    def get_all_receipts(current_user_id, page=1, per_page=10, country_id=None):
         """Get all active receipts with pagination"""
-        qry = Receipt.query.filter_by(deleted_at=None, created_by=current_user_id)
+        qry = ReceiptService._query(country_id).filter_by(created_by=current_user_id)
         receipts = qry.order_by(Receipt.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         return receipts
     
     @staticmethod
-    def get_receipt_by_id(receipt_id):
+    def get_receipt_by_id(receipt_id, country_id=None):
         """Get receipt by ID with items"""
-        return Receipt.query.filter_by(receipt_id=receipt_id, deleted_at=None).first()
+        return ReceiptService._query(country_id).filter_by(receipt_id=receipt_id).first()
     
     @staticmethod
-    def get_receipt_by_number(receipt_number):
+    def get_receipt_by_number(receipt_number, country_id=None):
         """Get receipt by receipt number"""
-        return Receipt.query.filter_by(receipt_number=receipt_number, deleted_at=None).first()
+        return ReceiptService._query(country_id).filter_by(receipt_number=receipt_number).first()
 
 
     @staticmethod
@@ -142,11 +155,11 @@ class ReceiptService:
             return None, str(e)
     
     @staticmethod
-    def get_receipt_items_with_details(receipt_id):
+    def get_receipt_items_with_details(receipt_id, country_id=None):
         """Get receipt items with detailed product information"""
         try:
             # Check if receipt exists
-            receipt = Receipt.query.filter_by(receipt_id=receipt_id, deleted_at=None).first()
+            receipt = ReceiptService.get_receipt_by_id(receipt_id, country_id)
             if not receipt:
                 return None, "Receipt not found"
             
@@ -191,10 +204,10 @@ class ReceiptService:
     
    
     @staticmethod
-    def delete_receipt(receipt_id):
+    def delete_receipt(receipt_id, country_id=None):
         """Soft delete receipt"""
         try:
-            receipt = Receipt.query.filter_by(receipt_id=receipt_id, deleted_at=None).first()
+            receipt = ReceiptService.get_receipt_by_id(receipt_id, country_id)
             if not receipt:
                 return False, "Receipt not found"
             

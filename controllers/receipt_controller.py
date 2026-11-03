@@ -1,21 +1,19 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify, g
 from services.receipt_service import ReceiptService
 from validators.schemas import ReceiptCreateSchema
-from utils.decorators import validate_json
+from utils.decorators import country_scope, validate_json
 from utils.utility import transform_receipt_data, transform_pre_generated_receipts_list
 
 receipt_bp = Blueprint('receipts', __name__)
 
 @receipt_bp.route('/all_receipts', methods=['GET'])
-@jwt_required()
-def get_receipts():
+@country_scope()
+def get_receipts(country_id):
     """Get all receipts with pagination"""
     try:
-        current_user_id = get_jwt_identity()
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
-        receipts = ReceiptService.get_all_receipts(current_user_id, page, per_page)
+        receipts = ReceiptService.get_all_receipts(g.current_user.user_id, page, per_page, country_id)
 
         if not receipts:
             return jsonify({'message': 'Receipt not found'}), 404
@@ -29,13 +27,12 @@ def get_receipts():
         return jsonify({'message': f'Failed to retrieve receipts: {str(e)}'}), 500
 
 @receipt_bp.route('/create-receipt', methods=['POST'])
-@jwt_required()
+@country_scope(required=True)
 @validate_json(ReceiptCreateSchema)
-def create_receipt(validated_data):
-    """Create a new receipt"""
+def create_receipt(validated_data, country_id):
+    """Create a new receipt in the user's country (super admin passes country_id)"""
     try:
-        current_user_id = get_jwt_identity()
-        receipt, error = ReceiptService.create_receipt(validated_data, current_user_id)
+        receipt, error = ReceiptService.create_receipt(validated_data, g.current_user.user_id, country_id)
         if error:
             return jsonify({'message inner': error}), 400
         return jsonify({
@@ -46,12 +43,11 @@ def create_receipt(validated_data):
         return jsonify({'message': f'Failed to create receipt: {str(e)}'}), 500
 
 @receipt_bp.route('get-receipt/<string:receipt_id>', methods=['GET'])
-@jwt_required()
-def get_receipt(receipt_id):
+@country_scope()
+def get_receipt(receipt_id, country_id):
     """Get receipt by ID"""
     try:
-        receipt = ReceiptService.get_receipt_by_id(receipt_id)    
-        print("Receipt is", receipt.to_dict())        
+        receipt = ReceiptService.get_receipt_by_id(receipt_id, country_id)
         if not receipt:
             return jsonify({'message': 'Receipt not found'}), 404
         
@@ -59,7 +55,7 @@ def get_receipt(receipt_id):
         #     'message': 'Receipt retrieved successfully',
         #     'data': receipt.to_dict()
         # }), 200
-        response = transform_receipt_data(receipt.to_dict())
+        response = transform_receipt_data(receipt.to_dict(), receipt.country)
         response["message"] = 'Receipts retrieved successfully'
         response["status"] = True
         return jsonify(response),200
@@ -68,11 +64,11 @@ def get_receipt(receipt_id):
         return jsonify({'message': f'Failed to retrieve receipt: {str(e)}'}), 500
 
 @receipt_bp.route('/number/<receipt_number>', methods=['GET'])
-@jwt_required()
-def get_receipt_by_number(receipt_number):
+@country_scope()
+def get_receipt_by_number(receipt_number, country_id):
     """Get receipt by receipt number"""
     try:
-        receipt = ReceiptService.get_receipt_by_number(receipt_number)
+        receipt = ReceiptService.get_receipt_by_number(receipt_number, country_id)
         if not receipt:
             return jsonify({'message': 'Receipt not found'}), 404
         
@@ -86,11 +82,11 @@ def get_receipt_by_number(receipt_number):
 
 
 @receipt_bp.route('/<string:receipt_id>/items', methods=['GET'])
-@jwt_required()
-def get_receipt_items(receipt_id):
+@country_scope()
+def get_receipt_items(receipt_id, country_id):
     """Get all items for a specific receipt"""
     try:
-        items, error = ReceiptService.get_receipt_items_with_details(receipt_id)
+        items, error = ReceiptService.get_receipt_items_with_details(receipt_id, country_id)
         
         if error:
             return jsonify({'message': error}), 404 if 'not found' in error else 400
@@ -110,11 +106,11 @@ def get_receipt_items(receipt_id):
         return jsonify({'message': f'Failed to retrieve receipt items: {str(e)}'}), 500
 
 @receipt_bp.route('/<string:receipt_id>/items/summary', methods=['GET'])
-@jwt_required()
-def get_receipt_items_summary(receipt_id):
+@country_scope()
+def get_receipt_items_summary(receipt_id, country_id):
     """Get receipt items summary with aggregated information"""
     try:
-        items, error = ReceiptService.get_receipt_items_with_details(receipt_id)
+        items, error = ReceiptService.get_receipt_items_with_details(receipt_id, country_id)
         
         if error:
             return jsonify({'message': error}), 404 if 'not found' in error else 400
@@ -157,11 +153,11 @@ def get_receipt_items_summary(receipt_id):
 
 
 @receipt_bp.route('/<string:receipt_id>', methods=['DELETE'])
-@jwt_required()
-def delete_receipt(receipt_id):
+@country_scope()
+def delete_receipt(receipt_id, country_id):
     """Delete receipt"""
     try:
-        success, error = ReceiptService.delete_receipt(receipt_id)
+        success, error = ReceiptService.delete_receipt(receipt_id, country_id)
         
         if error:
             return jsonify({'message': error}), 404 if 'not found' in error else 400

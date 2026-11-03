@@ -43,6 +43,7 @@ def create_app():
     from controllers.receipt_item_controller import receipt_item_bp
     from controllers.dashboard_controller import dashboard_bp
     from controllers.scheduler_controller import scheduler_bp
+    from controllers.country_controller import country_bp
     @app.route("/")
     def home():
         return "Welcome!"
@@ -53,20 +54,35 @@ def create_app():
     app.register_blueprint(receipt_bp, url_prefix='/api/receipts')
     app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
     app.register_blueprint(scheduler_bp, url_prefix='/api/scheduler')
+    app.register_blueprint(country_bp, url_prefix='/api/countries')
     
     # Create tables
     with app.app_context():
+        import models  # register every model (incl. Country) before create_all
         db.create_all()
-        
-        # Create default admin user if not exists
-        from models.user import User
+
+        # create_all() doesn't add columns to existing tables; fail clearly if the DB predates multi-country
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        missing = [f"{t}.{c}" for t, c in (('users', 'role'), ('countries', 'package_price'))
+                   if c not in {col['name'] for col in inspector.get_columns(t)}]
+        if missing:
+            raise RuntimeError(
+                f"Database schema is out of date (missing {', '.join(missing)}). Run the one-off migration first:\n"
+                "  python -m scripts.migrate_multi_country --code <CC> --name <Country> "
+                "--currency-code <CUR> --currency-symbol <SYM> [--package-name \"...\"]\n"
+                "See README.md > 'Upgrading an existing database'."
+            )
+
+        # Create default super admin if not exists; countries and their users are created from the UI
+        from models.user import User, SUPER_ADMIN
         admin = User.query.filter_by(email=ADMIN_ID).first()
         if not admin:
             admin_user = User(
                 user_name=ADMIN_NAME,
                 email=ADMIN_ID,
                 password=PASSWORD,
-                is_admin=True
+                role=SUPER_ADMIN
             )
             db.session.add(admin_user)
             db.session.commit()

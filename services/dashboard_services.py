@@ -14,12 +14,12 @@ from services.sales_report_ver3 import generate_comprehensive_excel_report
 class DashboardService:
 
     @staticmethod
-    def get_all_receipts_dashboard(start_date=None, end_date=None):
+    def get_all_receipts_dashboard(start_date=None, end_date=None, country_id=None):
         """Get all receipt dashboard with day-wise between the """
         try:
             # Build base query
             # with app.app_context():
-            query = Receipt.query.filter_by(deleted_at=None)
+            query = Receipt.query.filter_by(deleted_at=None, country_id=country_id)
             # Apply date filters if provided
             if start_date:
                 try:
@@ -75,12 +75,12 @@ class DashboardService:
 
 
     @staticmethod
-    def get_receipts_dashboard(start_date=None, end_date=None):
+    def get_receipts_dashboard(start_date=None, end_date=None, country_id=None):
         """Get receipt dashboard with day-wise grouping and filtering"""
         try:
             # with app.app_context():
-            # Build base query               
-            query = Receipt.query.filter_by(deleted_at=None)
+            # Build base query
+            query = Receipt.query.filter_by(deleted_at=None, country_id=country_id)
             # Apply date filters if provided
             if start_date:
                 try:
@@ -364,7 +364,7 @@ class DashboardService:
         return f"{sign}{change:.1f}%"
 
 
-    def get_previous_period_data(start_date, end_date):
+    def get_previous_period_data(start_date, end_date, country_id):
         """Fetch receipts for the previous period for trend comparison"""
         # Convert to datetime if needed
         if isinstance(start_date, str):
@@ -384,6 +384,7 @@ class DashboardService:
         # with app.app_context():
         prev_query = Receipt.query.filter(
             Receipt.deleted_at.is_(None),
+            Receipt.country_id == country_id,
             Receipt.created_at >= prev_start,
             Receipt.created_at < prev_end
         ).all()
@@ -458,12 +459,12 @@ class DashboardService:
 
     # ------------------ Main Function ------------------
     @staticmethod
-    def get_dashboard_data(start_date, end_date, package, currency,period="today"):
+    def get_dashboard_data(start_date, end_date, package, currency, country_id, period="today"):
         """Get receipt dashboard with dynamic grouping and revenue trends"""
         response = {"status": False, "message": "Something went wrong", "data": None}
         try:
             # with app.app_context():
-            query = Receipt.query.filter_by(deleted_at=None)
+            query = Receipt.query.filter_by(deleted_at=None, country_id=country_id)
             # --- Apply date filters ---
             if start_date and not isinstance(start_date, datetime):
                 try:
@@ -587,7 +588,7 @@ class DashboardService:
             revenueOverTime = DashboardService.group_revenue_over_time(merged_df, 'today')
 
             # with app.app_context():
-            prev_receipts = DashboardService.get_previous_period_data(start_date, end_date) if (start_date and end_date) else []
+            prev_receipts = DashboardService.get_previous_period_data(start_date, end_date, country_id) if (start_date and end_date) else []
             # print(f"Previous period receipts count: {len(prev_receipts)}")
             if prev_receipts:
                 prev_items = []

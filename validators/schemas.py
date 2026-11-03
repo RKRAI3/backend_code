@@ -1,14 +1,18 @@
 from pydantic import BaseModel, EmailStr, field_validator, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from decimal import Decimal
 from uuid import UUID
 from datetime import datetime
+
+RoleType = Literal['super_admin', 'country_admin', 'staff']
 
 class UserCreateSchema(BaseModel):
     user_name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=50)
-    is_admin: Optional[bool] = False
+    role: Optional[RoleType] = None
+    is_admin: Optional[bool] = False  # legacy: used only when role is not given
+    country_id: Optional[str] = Field(default=None, max_length=36)
         
     @field_validator('user_name')
     @classmethod
@@ -20,7 +24,46 @@ class UserCreateSchema(BaseModel):
 class UserUpdateSchema(BaseModel):
     user_name: Optional[str] = Field(None, min_length=2, max_length=100)
     email: Optional[EmailStr] = None
-    is_admin: Optional[bool] = None
+    role: Optional[RoleType] = None
+    is_admin: Optional[bool] = None  # legacy: used only when role is not given
+    country_id: Optional[str] = Field(default=None, max_length=36)
+
+class CountryCreateSchema(BaseModel):
+    code: str = Field(..., min_length=2, max_length=2)
+    name: str = Field(..., min_length=2, max_length=100)
+    currency_code: str = Field(..., min_length=3, max_length=3)
+    currency_symbol: str = Field(..., min_length=1, max_length=10)
+    currency_decimals: int = Field(default=2, ge=0, le=3)
+    tax_rate: Decimal = Field(default=Decimal('0'), ge=0, le=1)
+    package_name: Optional[str] = Field(default=None, max_length=36)
+    package_price: Optional[Decimal] = Field(default=None, ge=0)
+    receipt_prefix: str = Field(default='IN', min_length=1, max_length=10)
+    business_name: Optional[str] = Field(default=None, max_length=100)
+    alert_emails: Optional[List[EmailStr]] = None
+    is_active: bool = True
+
+    @field_validator('code', 'currency_code', 'receipt_prefix')
+    @classmethod
+    def upper(cls, v):
+        return v.strip().upper()
+
+class CountryUpdateSchema(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    currency_code: Optional[str] = Field(None, min_length=3, max_length=3)
+    currency_symbol: Optional[str] = Field(None, min_length=1, max_length=10)
+    currency_decimals: Optional[int] = Field(None, ge=0, le=3)
+    tax_rate: Optional[Decimal] = Field(None, ge=0, le=1)
+    package_name: Optional[str] = Field(None, max_length=36)
+    package_price: Optional[Decimal] = Field(None, ge=0)
+    receipt_prefix: Optional[str] = Field(None, min_length=1, max_length=10)
+    business_name: Optional[str] = Field(None, max_length=100)
+    alert_emails: Optional[List[EmailStr]] = None
+    is_active: Optional[bool] = None
+
+    @field_validator('currency_code', 'receipt_prefix')
+    @classmethod
+    def upper(cls, v):
+        return v.strip().upper() if v else v
 
 class LoginSchema(BaseModel):
     email: EmailStr
@@ -40,7 +83,7 @@ class ProductCreateSchema(BaseModel):
     def validate_unit_price(cls, v):
         if v <= 0:
             raise ValueError('Unit price must be greater than 0')
-        return round(v, 2)
+        return round(v, 3)
 
 class ProductUpdateSchema(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
@@ -52,7 +95,7 @@ class ProductUpdateSchema(BaseModel):
         if v is not None:
             if v <= 0:
                 raise ValueError('Unit price must be greater than 0')
-            return round(v, 2)
+            return round(v, 3)
         return v
 
 # class ReceiptItemSchema(BaseModel):

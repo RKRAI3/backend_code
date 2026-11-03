@@ -96,12 +96,14 @@ class EmailService:
             traceback.print_exc()
             return False, str(e)
 
-    def send_no_receipts_alert(self, to_emails, date):
+    def send_no_receipts_alert(self, to_emails, date, business_name=None, country_name=None):
         """Send alert when no receipts are generated"""
         date_str = date.strftime('%B %d, %Y')
         day_name = date.strftime('%A')
+        business_name = business_name or self.from_name
+        where = f" - {country_name}" if country_name else ""
 
-        subject = f"⚠️ No Receipts Generated - {date_str}"
+        subject = f"⚠️ No Receipts Generated{where} - {date_str}"
 
         text_content = f"""
 No Receipt Alert
@@ -111,7 +113,7 @@ Date: {date_str} ({day_name})
 No receipts were generated today.
 
 ---
-This is an automated message from BKK Print Service
+This is an automated message from {business_name}
         """
 
         html_content = f"""
@@ -127,12 +129,15 @@ This is an automated message from BKK Print Service
 
         return self.send_email(to_emails, subject, html_content, text_content)
 
-    def send_daily_summary(self, to_emails, date, summary_data, currency):
+    def send_daily_summary(self, to_emails, date, summary_data, currency,
+                           business_name=None, country_name=None, decimals=2):
         """Send daily summary email with receipt statistics"""
         date_str = date.strftime('%B %d, %Y')
         day_name = date.strftime('%A')
+        business_name = business_name or self.from_name
+        where = f" - {country_name}" if country_name else ""
 
-        subject = f"📊 Daily Summary - {date_str}"
+        subject = f"📊 Daily Summary{where} - {date_str}"
 
         total_receipts = summary_data.get('total_receipts', 0)
         total_revenue = summary_data.get('total_revenue', 0)
@@ -145,10 +150,10 @@ Date: {date_str} ({day_name})
 
 Summary:
 - Total Receipts: {total_receipts}
-- Total Revenue: {currency}{total_revenue:,.2f}
+- Total Revenue: {currency}{total_revenue:,.{decimals}f}
 
 ---
-This is an automated message from BKK Print Service
+This is an automated message from {business_name}
         """
 
         # HTML
@@ -225,19 +230,19 @@ This is an automated message from BKK Print Service
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Total Revenue</div>
-                    <div class="stat-value">{currency}{total_revenue:,.2f}</div>
+                    <div class="stat-value">{currency}{total_revenue:,.{decimals}f}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Avg per Receipt</div>
                     <div class="stat-value">
-                        {currency}{(total_revenue / total_receipts if total_receipts else 0):,.2f}
+                        {currency}{(total_revenue / total_receipts if total_receipts else 0):,.{decimals}f}
                     </div>
                 </div>
             </div>
         </div>
         <div class="footer">
             <p>
-                This is an automated message from BKK Print Service.<br>
+                This is an automated message from {business_name}.<br>
                 Please do not reply to this email.
             </p>
         </div>
